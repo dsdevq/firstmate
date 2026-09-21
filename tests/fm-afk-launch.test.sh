@@ -132,17 +132,17 @@ unit_enter_warns_that_exiting_the_agent_stops_reporting() {
   sock=$(mktemp -d "${TMPDIR:-/tmp}/fm-afk-warn-tmux.XXXXXX")
   mkdir -p "$st/state"
   cp "$(command -v sleep)" "$st/claude"
-  if ! TMUX_TMPDIR="$sock" tmux new-session -d -s warn-shell 'bash --norc --noprofile' \
-    || ! TMUX_TMPDIR="$sock" tmux new-session -d -s warn-agent "$st/claude 600"; then
+  if ! env -u TMUX -u TMUX_PANE TMUX_TMPDIR="$sock" tmux new-session -d -s warn-shell 'bash --norc --noprofile' \
+    || ! env -u TMUX -u TMUX_PANE TMUX_TMPDIR="$sock" tmux new-session -d -s warn-agent "$st/claude 600"; then
     fail "enter reporting warning: could not start private tmux panes"
-    TMUX_TMPDIR="$sock" tmux kill-server 2>/dev/null || true
+    env -u TMUX -u TMUX_PANE TMUX_TMPDIR="$sock" tmux kill-server 2>/dev/null || true
     rm -rf "$st" "$sock"
     return 0
   fi
-  shell_pane=$(TMUX_TMPDIR="$sock" tmux display-message -p -t warn-shell '#{pane_id}')
-  agent_pane=$(TMUX_TMPDIR="$sock" tmux display-message -p -t warn-agent '#{pane_id}')
+  shell_pane=$(env -u TMUX -u TMUX_PANE TMUX_TMPDIR="$sock" tmux display-message -p -t warn-shell '#{pane_id}')
+  agent_pane=$(env -u TMUX -u TMUX_PANE TMUX_TMPDIR="$sock" tmux display-message -p -t warn-agent '#{pane_id}')
   sleep 0.5
-  out=$(TMUX_TMPDIR="$sock" FM_SUPERVISOR_BACKEND=tmux FM_SUPERVISOR_TARGET="$shell_pane" \
+  out=$(env -u TMUX -u TMUX_PANE TMUX_TMPDIR="$sock" FM_SUPERVISOR_BACKEND=tmux FM_SUPERVISOR_TARGET="$shell_pane" \
     FM_HOME="$st" FM_STATE_OVERRIDE="$st/state" "$LAUNCH" enter --words 'merge it when green' 2>&1)
   if printf '%s' "$out" | grep -F 'exiting the agent (for example /exit) stops all reporting for the rest of the window' >/dev/null \
     && printf '%s' "$out" | grep -F "WARNING: this pane ($shell_pane) does not currently hold a live agent" >/dev/null \
@@ -151,7 +151,7 @@ unit_enter_warns_that_exiting_the_agent_stops_reporting() {
   else
     fail "enter: reporting warning or bare-shell pane read wrong: $out"
   fi
-  out=$(TMUX_TMPDIR="$sock" FM_SUPERVISOR_BACKEND=tmux FM_SUPERVISOR_TARGET="$agent_pane" \
+  out=$(env -u TMUX -u TMUX_PANE TMUX_TMPDIR="$sock" FM_SUPERVISOR_BACKEND=tmux FM_SUPERVISOR_TARGET="$agent_pane" \
     FM_HOME="$st" FM_STATE_OVERRIDE="$st/state" "$LAUNCH" enter --words 'merge it when green' 2>&1)
   if printf '%s' "$out" | grep -F "This pane ($agent_pane) currently holds a live agent." >/dev/null \
     && ! printf '%s' "$out" | grep -F 'WARNING:' >/dev/null; then
@@ -159,7 +159,7 @@ unit_enter_warns_that_exiting_the_agent_stops_reporting() {
   else
     fail "enter: a live agent pane was not reported as live: $out"
   fi
-  TMUX_TMPDIR="$sock" tmux kill-server 2>/dev/null || true
+  env -u TMUX -u TMUX_PANE TMUX_TMPDIR="$sock" tmux kill-server 2>/dev/null || true
   rm -rf "$st" "$sock"
 }
 

@@ -22,6 +22,9 @@ if [ -z "${FM_TEST_DAEMON_SOURCED:-}" ]; then
   . "$DAEMON"
 fi
 
+# tmux resolves its server from $TMUX before TMUX_TMPDIR, so the private-server
+# tests below could otherwise reach the caller's live tmux server.
+unset TMUX TMUX_PANE
 TMP_ROOT=$(fm_test_tmproot fm-daemon-tests)
 FM_DAEMON_PRIMARY_HARNESS=claude
 export FM_DAEMON_PRIMARY_HARNESS
