@@ -8,13 +8,14 @@ The durable marker and tmux flash remain as additional signals.
 ## Terminal away-window failure
 
 A wedge whose captain pane no longer holds a live agent is not a transient defer, because nothing will ever read an injection there.
-When the max-defer retry cannot confirm a submit and the pane cannot be positively read as a reachable agent - the pane is gone, or it is neither busy nor showing an agent composer, as after the captain exits the agent to a bare shell - the daemon ends the away window as failed.
-A busy pane or a composer holding text stays an ordinary wedge and keeps the rate-limited alarm above.
+When the max-defer retry cannot confirm a submit and the process-level classifier `fm_backend_agent_state` (through `supervisor_pane_agent_state`) proves the captain pane `dead` or `missing` - the agent exited to a bare shell, or the pane is authoritatively gone - the daemon ends the away window as failed.
+Missing proof of liveness is never proof of death: an `alive` agent, and every `ambiguous`, `unreadable`, or `unverified` reading (a failed capture, a blank unidentified row, a dialog or picker, a backend server that briefly cannot be queried), stays an ordinary wedge that keeps the buffer and the rate-limited alarm above, so a later tick can still deliver.
 The composer guard is unchanged: a failed window never injects anywhere.
 
 Failure rewrites `state/.subsuper-inject-wedged` so its first line begins `fm away-mode FAILED:`, naming the time, the undelivered age, and the pane, followed by the buffered items.
 The configured active alert fires once for the window, and delivery stops for the rest of it while the buffer stays intact for the return.
 When no active channel is configured or reachable, that marker is the only signal, and it still leads the return brief.
+On Linux with no `config/wedge-alarm` directive (and no `FM_WEDGE_ALARM_CHANNEL`), `auto` resolves to no active channel, so the in-window signal is the durable marker only and the captain learns of the failure at return; configure a channel under [Channels](#channels) to be told during the window.
 `bin/fm-afk-return.sh` reads that prefix and opens the return brief with the failure ahead of supervisor health, so a failed window never reads as a quiet success.
 The away read-back warns at entry that exiting the agent, as opposed to detaching the terminal, stops reporting for the window, and says whether the captain pane currently holds a live agent (`bin/fm-afk-launch.sh propose`).
 

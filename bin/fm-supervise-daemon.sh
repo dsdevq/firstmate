@@ -65,7 +65,7 @@
 #     undelivered past FM_MAX_DEFER_SECS, the daemon retries a normal flush and
 #     writes state/.subsuper-inject-wedged and attempts a configurable active
 #     alert if submit still cannot be confirmed. When the captain pane no longer
-#     holds a readable live agent, that wedge is a terminal away-window failure
+#     holds a live agent, that wedge is a terminal away-window failure
 #     rather than a repeating defer (away_delivery_escape; docs/wedge-alarm.md).
 #   - Cheap heartbeat catch-all: every HEARTBEAT_SCAN_SECS the daemon greps all
 #     state/*.status for a captain-relevant line the per-wake classifier might
@@ -124,8 +124,8 @@
 #                                   undelivered before one normal flush attempt;
 #                                   if that cannot confirm a submit, a wedge
 #                                   alarm fires, or the window fails terminally
-#                                   when the captain pane holds no readable live
-#                                   agent (default 300; 0 disables)
+#                                   when the captain pane holds no live agent
+#                                   (default 300; 0 disables)
 #          FM_WEDGE_ALARM_CHANNEL   override config/wedge-alarm with a single
 #                                   active-alert directive for that wedge alarm
 #                                   (off|auto|osascript|herdr|command:<cmd>). An
@@ -1169,10 +1169,9 @@ inject_wedge_alarm() {  # <state> <age-seconds>
 
 # --- terminal away-window failure --------------------------------------------
 # docs/wedge-alarm.md "Terminal away-window failure" owns this contract. A wedge
-# past max-defer whose captain pane cannot be positively read as holding a live
-# agent (the pane is gone, or it is neither busy nor showing an agent composer -
-# e.g. the agent exited to a bare shell) is not a transient defer: nobody will
-# ever read an injection there. The window is recorded as failed by rewriting
+# past max-defer whose captain pane is proven to hold no live agent (the pane is
+# gone, or the agent exited to a bare shell) is not a transient defer: nobody
+# will ever read an injection there. The window is recorded as failed by rewriting
 # the durable wedge marker with the AWAY_FAILED_PREFIX first line, the active
 # alert fires once, and delivery stops for the rest of the window so the buffer
 # is held intact for the return brief (bin/fm-afk-return.sh reads that prefix).
@@ -1186,19 +1185,16 @@ away_window_failed() {  # <state>
   return 1
 }
 
-# 0 when the supervisor pane cannot be positively read as a reachable agent;
-# 1 when it is busy or shows an agent composer (empty or holding text), which
-# stays an ordinary, repeating wedge. Classification only: never injects.
-supervisor_pane_unreachable() {
-  local target backend
-  target="${FM_SUPERVISOR_TARGET:-$FM_SUPERVISOR_TARGET_DEFAULT}"
-  backend="${FM_SUPERVISOR_BACKEND:-tmux}"
-  fm_backend_target_exists "$backend" "$target" || return 0
-  pane_is_busy "$target" "$backend" && return 1
-  case "$(fm_backend_composer_state "$backend" "$target" 2>/dev/null)" in
-    empty|pending|pending-unproven) return 1 ;;
+# 0 only when the process-level classifier (supervisor_pane_agent_state over
+# fm_backend_agent_state) proves the captain pane dead or authoritatively
+# missing. Every other reading - alive, or an unknown, blank, dialog, or
+# unqueryable pane - stays an ordinary, repeating wedge. Never injects.
+supervisor_pane_agent_gone() {
+  case "$(supervisor_pane_agent_state "${FM_SUPERVISOR_BACKEND:-tmux}" \
+    "${FM_SUPERVISOR_TARGET:-$FM_SUPERVISOR_TARGET_DEFAULT}" 2>/dev/null)" in
+    dead|missing) return 0 ;;
   esac
-  return 0
+  return 1
 }
 
 away_window_fail() {  # <state> <age-seconds>
@@ -1208,21 +1204,22 @@ away_window_fail() {  # <state> <age-seconds>
   n=$(wc -l < "$state/.subsuper-escalations" 2>/dev/null || echo 0)
   n=${n//[!0-9]/}
   {
-    printf '%s reporting stopped at %s after %ss undelivered: the captain pane %s no longer holds a readable live agent (agent exited, pane closed, or unreadable); %s escalation(s) held for the return brief\n' \
+    printf '%s reporting stopped at %s after %ss undelivered: the captain pane %s no longer holds a live agent (agent exited or pane closed); %s escalation(s) held for the return brief\n' \
       "$AWAY_FAILED_PREFIX" "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$age" "$target" "${n:-0}"
     printf 'Buffered items:\n'
     cat "$state/.subsuper-escalations" 2>/dev/null
   } 2>/dev/null > "$marker" || true
   [ "$AWAY_FAILED_NOTIFIED" -eq 1 ] && return 0
   AWAY_FAILED_NOTIFIED=1
-  log "ERROR: away window FAILED: escalations undelivered ${age}s and the captain pane $target no longer holds a readable live agent; delivery stopped for this window, buffer held for the return brief, marker $marker"
+  log "ERROR: away window FAILED: escalations undelivered ${age}s and the captain pane $target no longer holds a live agent; delivery stopped for this window, buffer held for the return brief, marker $marker"
   wedge_alarm_notify "away mode FAILED: the captain pane no longer holds a live agent, so reporting stopped for this away window (${n:-0} escalation(s) undelivered) - see $marker" "$marker"
 }
 
 # The max-defer escape (housekeeping step 1b, and the pane-gone backoff). If the
 # buffer is still undelivered past MAX_DEFER_SECS, retry the normal delivery
-# path once per max-defer window. If that cannot confirm, an unreachable pane
-# fails the window terminally; a reachable one raises the repeating wedge alarm.
+# path once per max-defer window. If that cannot confirm, a pane proven to hold
+# no live agent fails the window terminally; any other reading raises the
+# repeating wedge alarm.
 away_delivery_escape() {  # <state>
   local state=$1 max_defer oldest
   max_defer=${FM_MAX_DEFER_SECS:-$MAX_DEFER_SECS_DEFAULT}
@@ -1235,7 +1232,7 @@ away_delivery_escape() {  # <state>
   if escalate_flush "$state"; then
     log "inject recovered: max-defer flush succeeded after ${oldest}s undelivered"
     rm -f "$state/.subsuper-inject-wedged"
-  elif supervisor_pane_unreachable; then
+  elif supervisor_pane_agent_gone; then
     away_window_fail "$state" "$oldest"
   else
     inject_wedge_alarm "$state" "$oldest"
@@ -1258,9 +1255,9 @@ _oldest_line_age() {  # <buf> -> seconds since the oldest buffered item first ar
 #  1) batch flush: if the escalation buffer's oldest content is older than
 #     ESCALATE_BATCH_SECS (or batching is disabled), inject one digest.
 #  1b) max-defer escape: if the buffer is STILL undelivered past MAX_DEFER_SECS,
-#     attempt one normal delivery; if it cannot confirm, an unreachable captain
-#     pane fails the window terminally and a reachable one raises the wedge
-#     alarm. Never silently defer forever.
+#     attempt one normal delivery; if it cannot confirm, a captain pane proven
+#     dead or missing fails the window terminally and any other reading raises
+#     the wedge alarm. Never silently defer forever.
 #  2) stale recheck: for each pending stale marker past STALE_ESCALATE_SECS,
 #     re-peek the pane; still idle -> escalate (wedge); resumed -> clear marker.
 #  2b) pause re-surface: for each declared-wait marker past PAUSE_RESURFACE_SECS,

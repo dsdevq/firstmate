@@ -83,16 +83,24 @@ discover_supervisor_backend() {
 # contract's verdict (alive, dead, missing, ambiguous, unreadable, unverified).
 # tmux's classifier addresses a session:window, so a bare pane id such as
 # $TMUX_PANE is mapped to its window only when that window holds exactly this
-# one pane; otherwise the pane cannot be attributed and reads unreadable.
+# one pane; otherwise the pane cannot be attributed and reads unreadable. A pane
+# id that a successful server-wide pane inventory omits reads missing.
 supervisor_pane_agent_state() {  # <backend> <target>
-  local backend=$1 target=$2 resolved
+  local backend=$1 target=$2 resolved panes
   case "$backend:$target" in
     tmux:%*)
-      resolved=$(tmux display-message -p -t "$target" '#{window_panes} #{session_name}:#{window_name}' 2>/dev/null) || {
-        printf 'unreadable'; return 0; }
+      resolved=$(tmux display-message -p -t "$target" '#{pane_id} #{window_panes} #{session_name}:#{window_name}' 2>/dev/null) || resolved=
       case "$resolved" in
-        '1 '*) target=${resolved#1 } ;;
-        *) printf 'unreadable'; return 0 ;;
+        "$target 1 "*) target=${resolved#"$target 1 "} ;;
+        "$target "*) printf 'unreadable'; return 0 ;;
+        *)
+          if panes=$(tmux list-panes -a -F '#{pane_id}' 2>/dev/null) \
+             && ! printf '%s\n' "$panes" | grep -Fqx -- "$target"; then
+            printf 'missing'
+          else
+            printf 'unreadable'
+          fi
+          return 0 ;;
       esac ;;
   esac
   fm_backend_agent_state "$backend" "$target"
