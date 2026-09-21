@@ -68,7 +68,9 @@
 #                          [--expected-return <UTC ISO 8601>] [--spend <n>]
 #                              Write the away-posture record now, with no
 #                              separate confirmation, then print the entry
-#                              announcement and the read-back. With no words
+#                              announcement and the read-back, followed by the
+#                              reporting warning and whether this pane
+#                              currently holds a live agent. With no words
 #                              while away it is a refresh; new words replace
 #                              the mandate. On Pi this is the whole entry.
 #   fm-afk-launch.sh start     Capture the captain pane, then (unless the daemon
@@ -392,6 +394,25 @@ fm_afk_launch_enter() {
   fi
   "$FM_AFK_CONTRACT_CMD" enter "$@" || return
   fm_afk_launch_host_engine_note
+  fm_afk_launch_reporting_warning
+}
+
+# The entry-time reporting warning printed beside the read-back. A warning, never
+# a gate: docs/wedge-alarm.md "Terminal away-window failure" owns what happens
+# when the pane stops holding a live agent after entry.
+fm_afk_launch_reporting_warning() {
+  local target backend state
+  printf 'Reporting: the away posture reports into this pane. Detaching or closing the terminal client is fine, but exiting the agent (for example /exit) stops all reporting for the rest of the window; the window is then recorded as failed and the failure leads the return brief.\n'
+  if target=$(discover_supervisor_target) && backend=$(discover_supervisor_backend); then
+    state=$(supervisor_pane_agent_state "$backend" "$target" 2>/dev/null)
+  else
+    state=unresolved
+  fi
+  case "$state" in
+    alive) printf 'This pane (%s) currently holds a live agent.\n' "$target" ;;
+    dead|missing) printf 'WARNING: this pane (%s) does not currently hold a live agent (%s); reports would have nowhere to land.\n' "$target" "$state" ;;
+    *) printf 'This pane could not be read to confirm a live agent (%s).\n' "${state:-unreadable}" ;;
+  esac
 }
 
 # The command run inside the created terminal. Real launch runs the shared

@@ -2299,7 +2299,83 @@ test_max_defer_pending_composer_alarms_without_typing() {
   [ -s "$state/.subsuper-inject-wedged" ] || fail "pending composer did not raise a wedge alarm marker"
   [ -s "$state/.subsuper-escalations" ] || fail "buffer lost while composer was pending"
   grep -F 'human draft' "$dir/composer" >/dev/null || fail "pending composer content changed"
+  grep -F 'fm away-mode FAILED:' "$state/.subsuper-inject-wedged" >/dev/null \
+    && fail "a live agent holding pending text was failed terminally instead of alarming"
   pass "max-defer on a pending composer alarms without typing"
+}
+
+# The 2026-09-20 incident: the captain exited the agent, leaving a bare shell in
+# the pane. The composer guard correctly reads that as unknown and defers, so a
+# max-defer wedge there can never clear by itself. It must end the away window
+# as FAILED - a durable marker the return brief leads with, plus exactly one
+# active alert - instead of deferring and re-alarming into a log nobody reads.
+test_max_defer_dead_shell_fails_window_terminally() {
+  local dir state fakebin sent capture log first
+  dir=$(make_supercase maxdefer-dead-shell)
+  state="$dir/state"; fakebin="$dir/fakebin"
+  sent="$dir/sent.log"; : > "$sent"
+  log="$dir/alert.log"; : > "$log"
+  capture="$dir/pane.txt"; printf 'Bye!\ndenys@host:~$ \n' > "$capture"
+  escalate_add "$state" "done: PR https://x/y/pull/9 checks green"
+  echo $(( $(date +%s) - 600 )) > "$state/.subsuper-escalations.since"
+  afk_enter "$state"
+  AWAY_FAILED_NOTIFIED=0
+  PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_FAKE_TMUX_SENT="$sent" \
+    FM_FAKE_TMUX_CAPTURE="$capture" FM_FAKE_TMUX_CURSOR_Y=1 FM_WEDGE_ALARM_LOG="$log" \
+    FM_WEDGE_ALARM_CHANNEL=herdr FM_SUPERVISOR_BACKEND=tmux FM_SUPERVISOR_TARGET=fakepane \
+    FM_ESCALATE_BATCH_SECS=99999 FM_MAX_DEFER_SECS=60 housekeeping "$state"
+  [ ! -s "$sent" ] || fail "typed an escalation into a dead-shell pane"
+  first=$(head -1 "$state/.subsuper-inject-wedged" 2>/dev/null || true)
+  case "$first" in
+    "fm away-mode FAILED:"*) ;;
+    *) fail "a max-defer wedge on a dead-shell pane did not fail the away window terminally: '$first'" ;;
+  esac
+  grep -F 'done: PR https://x/y/pull/9' "$state/.subsuper-inject-wedged" >/dev/null \
+    || fail "the failure record does not carry the undelivered escalation"
+  [ "$(grep -c '^herdr' "$log")" -eq 1 ] || fail "terminal failure did not fire exactly one active alert: $(cat "$log")"
+  grep -F 'away mode FAILED' "$log" >/dev/null || fail "the active alert does not name the failed window: $(cat "$log")"
+  grep -F 'done: PR https://x/y/pull/9' "$state/.subsuper-escalations" >/dev/null \
+    || fail "buffer lost after the terminal failure (must be held for the return brief)"
+  # Terminal, not a repeating defer: a later window (marker aged past max-defer,
+  # fresh process memory) neither re-alarms, re-attempts delivery, nor rewrites
+  # the failure into an ordinary wedge.
+  touch -m -d "@$(( $(date +%s) - 600 ))" "$state/.subsuper-inject-wedged" 2>/dev/null \
+    || touch -mt "$(date -r "$(( $(date +%s) - 600 ))" '+%Y%m%d%H%M.%S')" "$state/.subsuper-inject-wedged"
+  AWAY_FAILED_NOTIFIED=0
+  PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_FAKE_TMUX_SENT="$sent" \
+    FM_FAKE_TMUX_CAPTURE="$capture" FM_FAKE_TMUX_CURSOR_Y=1 FM_WEDGE_ALARM_LOG="$log" \
+    FM_WEDGE_ALARM_CHANNEL=herdr FM_SUPERVISOR_BACKEND=tmux FM_SUPERVISOR_TARGET=fakepane \
+    FM_ESCALATE_BATCH_SECS=0 FM_MAX_DEFER_SECS=60 housekeeping "$state"
+  [ "$(grep -c '^herdr' "$log")" -eq 1 ] || fail "a failed window re-alarmed like a repeating defer: $(cat "$log")"
+  [ "$(head -1 "$state/.subsuper-inject-wedged")" = "$first" ] || fail "the failure record was rewritten after the window failed"
+  [ ! -s "$sent" ] || fail "delivery was re-attempted after the window failed"
+  if FM_SUPERVISOR_BACKEND=tmux FM_SUPERVISOR_TARGET=fakepane escalate_flush "$state"; then
+    fail "escalate_flush delivered after the away window failed"
+  fi
+  pass "max-defer on a dead-shell pane fails the away window terminally: durable record, one alert, buffer held, no repeat"
+}
+
+test_max_defer_vanished_pane_fails_window_even_without_alert_channel() {
+  local dir state fakebin log first
+  dir=$(make_supercase maxdefer-pane-gone)
+  state="$dir/state"; fakebin="$dir/fakebin"
+  log="$dir/alert.log"; : > "$log"
+  escalate_add "$state" "needs-decision: pick A"
+  echo $(( $(date +%s) - 600 )) > "$state/.subsuper-escalations.since"
+  afk_enter "$state"
+  AWAY_FAILED_NOTIFIED=0
+  # The main loop's pane-gone backoff runs the same escape (away_delivery_escape).
+  PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=0 FM_WEDGE_ALARM_LOG="$log" \
+    FM_WEDGE_ALARM_CHANNEL=off FM_SUPERVISOR_BACKEND=tmux FM_SUPERVISOR_TARGET=fakepane \
+    FM_MAX_DEFER_SECS=60 away_delivery_escape "$state"
+  first=$(head -1 "$state/.subsuper-inject-wedged" 2>/dev/null || true)
+  case "$first" in
+    "fm away-mode FAILED:"*) ;;
+    *) fail "a vanished captain pane did not fail the away window: '$first'" ;;
+  esac
+  [ ! -s "$log" ] || fail "the off channel still fired an active alert"
+  [ -s "$state/.subsuper-escalations" ] || fail "buffer lost when the captain pane vanished"
+  pass "a vanished captain pane fails the away window durably even when no active alert channel is configured"
 }
 
 test_normal_flush_clears_stale_wedge_marker() {
@@ -3207,6 +3283,8 @@ test_submit_ack_reports_pending_on_persistent_swallow
 test_max_defer_empty_swallow_types_once_and_alarms
 test_max_defer_flushes_empty_idle_pane
 test_max_defer_pending_composer_alarms_without_typing
+test_max_defer_dead_shell_fails_window_terminally
+test_max_defer_vanished_pane_fails_window_even_without_alert_channel
 test_normal_flush_clears_stale_wedge_marker
 test_oversized_digest_is_bounded_and_kept_durable
 test_digest_budget_counts_omitted_events

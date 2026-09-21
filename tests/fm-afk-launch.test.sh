@@ -118,6 +118,51 @@ unit_retired_two_step_entry_is_refused() {
   rm -rf "$st"
 }
 
+# The entry-time reporting warning: `enter` states that exiting the agent (not
+# detaching) stops reporting for the window, and says whether the captain pane
+# holds a live agent when it can be read. Real tmux panes on a private tmux
+# server (TMUX_TMPDIR), so no shared tmux or Herdr session is touched.
+unit_enter_warns_that_exiting_the_agent_stops_reporting() {
+  local st sock shell_pane agent_pane out
+  if ! command -v tmux >/dev/null 2>&1; then
+    pass "enter reporting warning: SKIP (tmux absent)"
+    return 0
+  fi
+  st=$(mktemp -d "${TMPDIR:-/tmp}/fm-afk-warn.XXXXXX")
+  sock=$(mktemp -d "${TMPDIR:-/tmp}/fm-afk-warn-tmux.XXXXXX")
+  mkdir -p "$st/state"
+  cp "$(command -v sleep)" "$st/claude"
+  if ! TMUX_TMPDIR="$sock" tmux new-session -d -s warn-shell 'bash --norc --noprofile' \
+    || ! TMUX_TMPDIR="$sock" tmux new-session -d -s warn-agent "$st/claude 600"; then
+    fail "enter reporting warning: could not start private tmux panes"
+    TMUX_TMPDIR="$sock" tmux kill-server 2>/dev/null || true
+    rm -rf "$st" "$sock"
+    return 0
+  fi
+  shell_pane=$(TMUX_TMPDIR="$sock" tmux display-message -p -t warn-shell '#{pane_id}')
+  agent_pane=$(TMUX_TMPDIR="$sock" tmux display-message -p -t warn-agent '#{pane_id}')
+  sleep 0.5
+  out=$(TMUX_TMPDIR="$sock" FM_SUPERVISOR_BACKEND=tmux FM_SUPERVISOR_TARGET="$shell_pane" \
+    FM_HOME="$st" FM_STATE_OVERRIDE="$st/state" "$LAUNCH" enter --words 'merge it when green' 2>&1)
+  if printf '%s' "$out" | grep -F 'exiting the agent (for example /exit) stops all reporting for the rest of the window' >/dev/null \
+    && printf '%s' "$out" | grep -F "WARNING: this pane ($shell_pane) does not currently hold a live agent" >/dev/null \
+    && [ -f "$st/state/.afk-contract" ]; then
+    pass "enter: warns that exiting the agent stops reporting, and flags a pane left at a bare shell"
+  else
+    fail "enter: reporting warning or bare-shell pane read wrong: $out"
+  fi
+  out=$(TMUX_TMPDIR="$sock" FM_SUPERVISOR_BACKEND=tmux FM_SUPERVISOR_TARGET="$agent_pane" \
+    FM_HOME="$st" FM_STATE_OVERRIDE="$st/state" "$LAUNCH" enter --words 'merge it when green' 2>&1)
+  if printf '%s' "$out" | grep -F "This pane ($agent_pane) currently holds a live agent." >/dev/null \
+    && ! printf '%s' "$out" | grep -F 'WARNING:' >/dev/null; then
+    pass "enter: reports a live agent in the captain pane without a warning"
+  else
+    fail "enter: a live agent pane was not reported as live: $out"
+  fi
+  TMUX_TMPDIR="$sock" tmux kill-server 2>/dev/null || true
+  rm -rf "$st" "$sock"
+}
+
 unit_pi_never_launches_the_daemon() {
   local st harness out rc
   for harness in pi pi-signed; do
@@ -1599,6 +1644,7 @@ e2e_tmux() {
 unit_clear_stale
 unit_enter_records_the_posture_in_one_step_without_a_daemon
 unit_retired_two_step_entry_is_refused
+unit_enter_warns_that_exiting_the_agent_stops_reporting
 unit_pi_never_launches_the_daemon
 unit_test_harness_seam_requires_the_marker
 unit_pi_enter_stop_does_not_claim_a_daemon_terminal
