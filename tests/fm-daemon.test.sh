@@ -2332,7 +2332,7 @@ test_max_defer_dead_shell_fails_window_terminally() {
   log="$dir/alert.log"; : > "$log"
   sock=$(private_tmux_server "$dir") || { pass "max-defer dead shell: SKIP (tmux absent)"; return 0; }
   TMUX_TMPDIR="$sock" tmux new-session -d -s captain 'bash --norc --noprofile' \
-    || { fail "max-defer dead shell: could not start a private tmux pane"; rm -rf "$sock"; return 0; }
+    || { rm -rf "$sock"; fail "max-defer dead shell: could not start a private tmux pane"; }
   pane=$(TMUX_TMPDIR="$sock" tmux display-message -p -t captain '#{pane_id}')
   sleep 0.5
   escalate_add "$state" "done: PR https://x/y/pull/9 checks green"
@@ -2386,7 +2386,7 @@ test_max_defer_live_agent_unknown_composer_does_not_fail_window() {
   log="$dir/alert.log"; : > "$log"
   sock=$(private_tmux_server "$dir") || { pass "max-defer live agent: SKIP (tmux absent)"; return 0; }
   TMUX_TMPDIR="$sock" tmux new-session -d -s captain "$dir/claude 600" \
-    || { fail "max-defer live agent: could not start a private tmux pane"; rm -rf "$sock"; return 0; }
+    || { rm -rf "$sock"; fail "max-defer live agent: could not start a private tmux pane"; }
   pane=$(TMUX_TMPDIR="$sock" tmux display-message -p -t captain '#{pane_id}')
   sleep 0.5
   [ "$(TMUX_TMPDIR="$sock" supervisor_pane_agent_state tmux "$pane")" = alive ] \
@@ -2423,9 +2423,9 @@ test_max_defer_vanished_pane_fails_window_even_without_alert_channel() {
   sock=$(private_tmux_server "$dir") || { pass "max-defer vanished pane: SKIP (tmux absent)"; return 0; }
   if ! TMUX_TMPDIR="$sock" tmux new-session -d -s keep "$dir/claude 600" \
     || ! TMUX_TMPDIR="$sock" tmux new-session -d -s captain "$dir/claude 600"; then
-    fail "max-defer vanished pane: could not start private tmux panes"
     TMUX_TMPDIR="$sock" tmux kill-server 2>/dev/null || true
-    rm -rf "$sock"; return 0
+    rm -rf "$sock"
+    fail "max-defer vanished pane: could not start private tmux panes"
   fi
   pane=$(TMUX_TMPDIR="$sock" tmux display-message -p -t captain '#{pane_id}')
   TMUX_TMPDIR="$sock" tmux kill-session -t captain
