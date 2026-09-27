@@ -417,6 +417,22 @@ binding_is "$REMOTE_RECORD" "the waiting remote claim must complete once the loc
 prior_is "$HOST_RECORD" "the waiting remote claim must preserve the binding it displaced"
 pass "the host-local leg serializes its claim behind the binding lock"
 
+# A legacy-provisioned remote record carries no parent_host. A remote claim over
+# it names the same parent, so it refreshes the host without overwriting the
+# binding restore returns to.
+LEGACY_REMOTE_RECORD=$(printf 'schema=fm-secondmate-parent.v1\nroute=remote\n')
+write_binding "$LEGACY_REMOTE_RECORD"
+rm -f "$MATE/.fm-secondmate-parent-prior"
+takeover "$HOST_PRIMARY" claim ios >/dev/null || fail "the host primary could not claim the legacy-bound mate"
+takeover "$HOST_PRIMARY" restore ios >/dev/null || fail "the host primary could not hand the legacy-bound mate back"
+binding_is "$LEGACY_REMOTE_RECORD" "restore must reinstate the legacy remote record byte for byte"
+OUT=$(remote_takeover claim ios) || fail "the remote claim over a legacy record failed: $OUT"
+binding_is "$REMOTE_RECORD" "a remote claim over a legacy record must refresh its parent_host"
+prior_is "$HOST_RECORD" "a remote claim over a legacy record must keep the binding restore returns to"
+OUT=$(remote_takeover restore ios) || fail "the remote restore after a legacy claim failed: $OUT"
+binding_is "$HOST_RECORD" "restore after a legacy remote claim must return the host parent"
+pass "a remote claim over a legacy no-host record keeps the binding restore returns to"
+
 # A symlinked binding must not become a remote claim either.
 rm -f "$MATE/.fm-secondmate-parent"
 ln -s "$TMP_ROOT/elsewhere-binding" "$MATE/.fm-secondmate-parent"

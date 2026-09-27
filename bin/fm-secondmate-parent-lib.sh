@@ -152,12 +152,13 @@ fm_secondmate_parent_record_render() { # <route> [parent_home] [parent_host]
 # The displaced record lands first and the new one second, each by rename, so an
 # interruption between them leaves the saved copy equal to the still-live record
 # - a harmless no-op for a later restore - and never a home with no binding.
-# A live record already equal to the new binding is left alone with its saved
-# copy, so a repeated or retried claim cannot overwrite the binding to restore.
+# A live record that already names the new parent keeps its saved copy, so a
+# repeated or retried claim cannot overwrite the binding to restore; only the
+# diagnostic-only parent_host is refreshed.
 # Returns 0 on success, 1 with FM_SECONDMATE_PARENT_ERROR set otherwise.
 fm_secondmate_parent_rebind() { # <home> <route> [parent_home] [parent_host]
   local home=$1 route=$2 parent_home=${3-} parent_host=${4-}
-  local current prior rendered tmp
+  local current prior rendered tmp same_parent=0
   FM_SECONDMATE_PARENT_ERROR=
   if [ ! -d "$home" ] || [ -L "$home" ]; then
     FM_SECONDMATE_PARENT_ERROR="secondmate home is unavailable or unsafe: $home"
@@ -174,7 +175,12 @@ fm_secondmate_parent_rebind() { # <home> <route> [parent_home] [parent_host]
       FM_SECONDMATE_PARENT_ERROR="the live parent binding is unsafe or malformed: $current"
       return 1
     fi
-    [ "$(cat "$current")" != "$rendered" ] || return 0
+    if [ "$FM_SECONDMATE_PARENT_ROUTE" = "$route" ] \
+      && [ "$(_fm_secondmate_parent_realpath "$FM_SECONDMATE_PARENT_HOME")" = "$(_fm_secondmate_parent_realpath "$parent_home")" ]; then
+      same_parent=1
+    fi
+  fi
+  if [ "$same_parent" = 0 ] && { [ -e "$current" ] || [ -L "$current" ]; }; then
     if [ -e "$prior" ] || [ -L "$prior" ]; then
       if [ ! -f "$prior" ] || [ -L "$prior" ]; then
         FM_SECONDMATE_PARENT_ERROR="the saved previous parent binding is unsafe: $prior"
