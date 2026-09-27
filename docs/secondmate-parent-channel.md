@@ -59,7 +59,7 @@ A take-over does not move the expectations the displaced parent already held, so
 `tests/fm-teardown.test.sh` covers teardown delivering a child's final line and refusing when the channel cannot be written.
 `tests/fm-brief.test.sh` pins the charter's channel rule.
 `tests/fm-pending-reply.test.sh` covers helper-selected local routing, remote-channel classification, same-basename restatement before false escalation, readable wrong-home diagnostics, and the rule that arbitrary mate-home sightings never acknowledge a reply.
-`tests/fm-secondmate-parent-takeover.test.sh` covers moving the binding in both directions against real files and the repo's deterministic SSH boundary, the reverse move restoring the exact displaced record, the displaced primary refusing to steer or claim, the unanswered expectations it names, and a malformed or symlinked record failing closed on every one of those paths.
+`tests/fm-secondmate-parent-takeover.test.sh` covers moving the binding in both directions against real files and the repo's deterministic SSH boundary, the reverse move restoring the exact displaced record, the displaced primary refusing to steer or claim, the unanswered expectations it names, a malformed or symlinked record failing closed on every one of those paths, a repeated claim keeping the binding restore returns to, re-seeding refusing to move a binding, and the host-local leg waiting on the binding lock.
 
 ## Live verification
 

@@ -651,12 +651,14 @@ Either way the binding it displaces is preserved beside the live one, so handing
 bin/fm-secondmate-takeover.sh restore <id>
 ```
 
+A repeated or retried claim keeps the preserved binding, so `restore` still returns the parent the first claim displaced.
 Read the current owner and the preserved one, changing nothing, with `bin/fm-secondmate-takeover.sh show <id>`.
 The script's own header owns the exact verbs and their output.
 
 While a mate is bound to the other parent, this primary refuses to steer or claim it instead of supervising it in parallel.
 That refusal names the primary that currently holds it, and the read-only and maintenance verbs stay available from either side so the split can be diagnosed.
 A binding that exists but cannot be trusted - malformed, symlinked, or corrupt - refuses on every one of those paths rather than being overwritten.
+Re-seeding never moves the binding either: `bin/fm-home-seed.sh` refuses a home whose record names any other parent, remote included, or cannot be parsed, and names `claim` as the way to move it.
 A home seeded before that record existed has none, which names no parent: such a mate is still steerable, and a claim simply establishes its record.
 
 A take-over does not move the replies the displaced parent was already waiting on.
