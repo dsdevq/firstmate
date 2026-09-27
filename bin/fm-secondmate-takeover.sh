@@ -78,17 +78,6 @@ require_local_home() { # <id>
   [ "$(cat "$marker")" = "$id" ] || die "$ROUTE_HOME belongs to another secondmate, not $id"
 }
 
-# Serialize the swap against another primary on this same filesystem, so two
-# claims cannot interleave their save-and-install steps.
-with_binding_lock() { # <command...>
-  local lock rc=0
-  lock="$ROUTE_HOME/.fm-secondmate-parent.lock"
-  fm_lock_acquire_wait "$lock" || die "the parent binding for this secondmate could not be locked at $lock"
-  "$@" || rc=$?
-  fm_lock_release "$lock" || true
-  return "$rc"
-}
-
 print_binding() { # <label> <record-path>
   local label=$1 record=$2
   if fm_secondmate_parent_record_parse "$record"; then
@@ -159,7 +148,7 @@ cmd_claim() { # <id>
     was_route=$FM_SECONDMATE_PARENT_ROUTE
     was_home=$FM_SECONDMATE_PARENT_HOME
   fi
-  with_binding_lock fm_secondmate_parent_rebind "$ROUTE_HOME" local "$(this_home)" \
+  fm_secondmate_parent_locked "$ROUTE_HOME" fm_secondmate_parent_rebind "$ROUTE_HOME" local "$(this_home)" \
     || die "$FM_SECONDMATE_PARENT_ERROR"
   printf 'takeover: %s is now bound to this home %s\n' "$id" "$(this_home)"
   print_binding 'displaced parent, preserved for restore' "$(fm_secondmate_parent_prior_path "$ROUTE_HOME")"
@@ -183,7 +172,7 @@ cmd_restore() { # <id>
     was_route=$FM_SECONDMATE_PARENT_ROUTE
     was_home=$FM_SECONDMATE_PARENT_HOME
   fi
-  with_binding_lock fm_secondmate_parent_restore "$ROUTE_HOME" || die "$FM_SECONDMATE_PARENT_ERROR"
+  fm_secondmate_parent_locked "$ROUTE_HOME" fm_secondmate_parent_restore "$ROUTE_HOME" || die "$FM_SECONDMATE_PARENT_ERROR"
   fm_secondmate_parent_record_parse "$(fm_secondmate_parent_path "$ROUTE_HOME")" \
     || die "the restored parent binding is unreadable: $(fm_secondmate_parent_path "$ROUTE_HOME")"
   now_route=$FM_SECONDMATE_PARENT_ROUTE

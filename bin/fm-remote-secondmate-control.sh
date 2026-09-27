@@ -466,7 +466,7 @@ cmd_takeover() {
   validate_id "$id"
   validate_home "$id"
   case "$parent_host" in ''|*[!A-Za-z0-9._-]*) [ -z "$parent_host" ] || die "invalid parent host alias: $parent_host" ;; esac
-  fm_secondmate_parent_rebind "$TARGET_HOME" remote '' "$parent_host" \
+  fm_secondmate_parent_locked "$TARGET_HOME" fm_secondmate_parent_rebind "$TARGET_HOME" remote '' "$parent_host" \
     || die "$FM_SECONDMATE_PARENT_ERROR"
   printf 'takeover: %s is now bound to its remote parent\n' "$id"
   cmd_parent "$id"
@@ -478,7 +478,7 @@ cmd_takeover_restore() {
   local id=$1
   validate_id "$id"
   validate_home "$id"
-  fm_secondmate_parent_restore "$TARGET_HOME" || die "$FM_SECONDMATE_PARENT_ERROR"
+  fm_secondmate_parent_locked "$TARGET_HOME" fm_secondmate_parent_restore "$TARGET_HOME" || die "$FM_SECONDMATE_PARENT_ERROR"
   printf 'takeover-restore: %s is now bound to its previous parent\n' "$id"
   cmd_parent "$id"
 }

@@ -1561,7 +1561,6 @@ fm_pending_reply_tick() {  # <state-dir>
   return 0
 }
 
-# True when any open (non-resolved) pending reply exists for a task.
 # One line per unresolved expectation this home still holds for <task_id>, as
 # `<corr_id> phase=<phase> request=<summary>`. Read by bin/fm-secondmate-takeover.sh
 # so a parent handover can name the replies a displaced parent was waiting on
@@ -1584,6 +1583,7 @@ fm_pending_reply_open_summaries() {  # <state-dir> <task_id>
   return "$found"
 }
 
+# True when any open (non-resolved) pending reply exists for a task.
 fm_pending_reply_task_has_open() {  # <state-dir> <task_id>
   local state=$1 task_id=$2 dir rec phase tid
   dir=$(fm_pending_reply_dir "$state")

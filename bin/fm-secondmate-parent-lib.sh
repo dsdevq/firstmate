@@ -152,6 +152,8 @@ fm_secondmate_parent_record_render() { # <route> [parent_home] [parent_host]
 # The displaced record lands first and the new one second, each by rename, so an
 # interruption between them leaves the saved copy equal to the still-live record
 # - a harmless no-op for a later restore - and never a home with no binding.
+# A live record already equal to the new binding is left alone with its saved
+# copy, so a repeated or retried claim cannot overwrite the binding to restore.
 # Returns 0 on success, 1 with FM_SECONDMATE_PARENT_ERROR set otherwise.
 fm_secondmate_parent_rebind() { # <home> <route> [parent_home] [parent_host]
   local home=$1 route=$2 parent_home=${3-} parent_host=${4-}
@@ -172,6 +174,7 @@ fm_secondmate_parent_rebind() { # <home> <route> [parent_home] [parent_host]
       FM_SECONDMATE_PARENT_ERROR="the live parent binding is unsafe or malformed: $current"
       return 1
     fi
+    [ "$(cat "$current")" != "$rendered" ] || return 0
     if [ -e "$prior" ] || [ -L "$prior" ]; then
       if [ ! -f "$prior" ] || [ -L "$prior" ]; then
         FM_SECONDMATE_PARENT_ERROR="the saved previous parent binding is unsafe: $prior"
@@ -191,6 +194,23 @@ fm_secondmate_parent_rebind() { # <home> <route> [parent_home] [parent_host]
     FM_SECONDMATE_PARENT_ERROR="could not install the new parent binding at $current"
     return 1
   fi
+}
+
+# Run <command...> holding <home>'s binding lock, so two primaries on the mate's
+# filesystem cannot interleave their save-and-install steps.
+# Returns the command's status, or 1 with FM_SECONDMATE_PARENT_ERROR set when
+# the lock cannot be taken.
+fm_secondmate_parent_locked() { # <home> <command...>
+  local lock rc=0
+  lock="$1/.fm-secondmate-parent.lock"
+  shift
+  if ! fm_lock_acquire_wait "$lock"; then
+    FM_SECONDMATE_PARENT_ERROR="the parent binding for this secondmate could not be locked at $lock"
+    return 1
+  fi
+  "$@" || rc=$?
+  fm_lock_release "$lock" || true
+  return "$rc"
 }
 
 # Put the saved previous binding back, keeping the one it displaces, so moving a
