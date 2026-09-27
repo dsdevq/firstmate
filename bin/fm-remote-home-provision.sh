@@ -19,6 +19,10 @@
 # .fm-secondmate-home marker commits the complete seed last.
 # A newly created home is removed on failure. An existing matching seeded home
 # is converged only through guarded ordinary-file updates and new project clones.
+# Convergence never moves the parent binding: an existing home whose record is
+# present and names anything but the remote route is refused, and that check is
+# repeated under the binding lock at the final write so a take-over that lands
+# mid-provision is neither overwritten nor rolled back.
 set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

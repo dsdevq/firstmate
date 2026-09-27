@@ -32,6 +32,8 @@
 # waiting on. Those expectations live in the displaced parent's own home, so they
 # are named exactly when that home is readable here and reported as unreachable
 # otherwise; either way the report says where the mate's replies land from now on.
+# A claim that finds the mate already bound to this parent displaces nothing,
+# keeps the preserved binding, and says so instead of reporting a displacement.
 # docs/remote-secondmates.md owns the operator procedure.
 set -eu
 
