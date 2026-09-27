@@ -1,0 +1,26 @@
+ok - a primary on the secondmate's own host claims a remotely bound mate
+ok - a repeated claim keeps the displaced binding restore returns to
+ok - the reverse take-over restores the saved binding and keeps switching back one command
+ok - re-seeding a remotely bound home refuses and leaves the binding untouched
+ok - re-seeding a home with a malformed binding refuses rather than rewriting it
+ok - remote re-seeding refuses a host-claimed home and still converges a remotely bound one
+ok - a claim made while provisioning runs is not overwritten by its write or its rollback
+ok - a displaced primary refuses to claim the secondmate and names the holder
+ok - a displaced primary refuses to steer the secondmate and names the holder
+ok - the guard clears as soon as the binding names the steering primary
+ok - a malformed parent binding fails closed on take-over and on steering
+ok - a symlinked parent binding fails closed on take-over and on steering
+ok - a home with no parent binding is claimable and is not reported as displaced
+ok - restore refuses rather than inventing a parent when nothing was preserved
+ok - a take-over names the replies the displaced parent was still waiting on
+ok - a taken-over secondmate home stays clean for its guarded pre-launch sync
+ok - the remote primary claims a host-bound mate through the real host-local leg
+ok - a repeated remote claim reports that it displaced nothing
+ok - the remote primary hands the mate back to its host parent in one command
+ok - the host-local leg refuses a remote steer while the mate is bound to a parent on its own host
+ok - the binding stays readable from the displaced remote primary
+ok - the host-local leg serializes its claim behind the binding lock
+ok - a remote claim over a legacy no-host record keeps the binding restore returns to
+ok - a symlinked parent binding fails closed through the remote leg too
+ALL TESTS PASSED
+rm: cannot remove '/tmp/fm-secondmate-parent-takeover.NWMndp': Directory not empty
