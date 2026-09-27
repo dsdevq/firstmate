@@ -28,6 +28,8 @@ MAX_MANIFEST_BYTES=1048576
 
 # shellcheck source=bin/fm-project-origin-lib.sh
 . "$SCRIPT_DIR/fm-project-origin-lib.sh"
+# shellcheck source=bin/fm-secondmate-parent-lib.sh
+. "$SCRIPT_DIR/fm-secondmate-parent-lib.sh"
 
 die() { printf 'error: %s\n' "$1" >&2; exit 1; }
 
@@ -264,11 +266,8 @@ chmod 600 "$FM_HOME/data/charter.md.tmp.$$"
 mv -f -- "$FM_HOME/data/charter.md.tmp.$$" "$FM_HOME/data/charter.md"
 cp "$PROJECT_REG" "$FM_HOME/data/projects.md.tmp.$$"
 mv -f -- "$FM_HOME/data/projects.md.tmp.$$" "$FM_HOME/data/projects.md"
-{
-  printf 'schema=fm-secondmate-parent.v1\n'
-  printf 'route=remote\n'
-  [ -z "$PARENT_HOST" ] || printf 'parent_host=%s\n' "$PARENT_HOST"
-} > "$FM_HOME/.fm-secondmate-parent.tmp.$$"
+fm_secondmate_parent_record_render remote '' "$PARENT_HOST" \
+  > "$FM_HOME/.fm-secondmate-parent.tmp.$$" || die "could not render the durable parent binding"
 mv -f -- "$FM_HOME/.fm-secondmate-parent.tmp.$$" "$FM_HOME/.fm-secondmate-parent"
 printf '%s\n' "$ID" > "$FM_HOME/.fm-secondmate-home.tmp.$$"
 mv -f -- "$FM_HOME/.fm-secondmate-home.tmp.$$" "$FM_HOME/.fm-secondmate-home"

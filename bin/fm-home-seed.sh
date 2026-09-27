@@ -970,11 +970,11 @@ seed_home() {
   # restart that drops the launch-time FM_PUBLIC_FOLLOWUP_PRIMARY_HOME prefix
   # can still resolve the real parent instead of silently treating its relay
   # as inactive.
-  {
-    printf 'schema=fm-secondmate-parent.v1\n'
-    printf 'route=local\n'
-    printf 'parent_home=%s\n' "$(resolved_path "$FM_HOME")"
-  } > "$home/$SUB_HOME_PARENT_MARKER.tmp.$$"
+  fm_secondmate_parent_record_render local "$(resolved_path "$FM_HOME")" \
+    > "$home/$SUB_HOME_PARENT_MARKER.tmp.$$" || {
+    echo "error: could not render the durable parent binding for $home" >&2
+    return 1
+  }
   mv -f -- "$home/$SUB_HOME_PARENT_MARKER.tmp.$$" "$home/$SUB_HOME_PARENT_MARKER"
   printf '%s\n' "$id" > "$home/$SUB_HOME_MARKER.tmp.$$"
   mv -f -- "$home/$SUB_HOME_MARKER.tmp.$$" "$home/$SUB_HOME_MARKER"
