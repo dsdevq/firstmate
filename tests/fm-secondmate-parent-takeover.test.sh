@@ -19,8 +19,9 @@
 #     primary's steer while the mate is bound to a parent on its own host;
 #   - a malformed and a symlinked binding still failing closed on every one of
 #     those paths rather than being overwritten or steered past;
-#   - a repeated claim keeping the binding restore returns to, re-seeding refusing
-#     to move a binding, and the host-local leg waiting on the binding lock.
+#   - a repeated claim keeping the binding restore returns to, local and remote
+#     re-seeding refusing to move a binding, and the host-local leg waiting on
+#     the binding lock.
 set -u
 
 # shellcheck source=tests/lib.sh
@@ -153,6 +154,32 @@ assert_contains "$OUT" "no usable parent binding" \
 binding_is "$MALFORMED_RECORD" "a refused re-seed must leave the malformed binding for the operator"
 write_binding "$REMOTE_RECORD"
 pass "re-seeding a home with a malformed binding refuses rather than rewriting it"
+
+# Provisioning is the remote-side writer, so the remote primary re-seeding a mate
+# a host primary has claimed must refuse rather than silently take it back.
+remote_reseed() {
+  {
+    printf 'schema=fm-remote-home-provision.v1\n'
+    printf 'id_b64=%s\n' "$(printf 'ios' | base64)"
+    printf 'charter_b64=%s\n' "$(printf 'Reseed charter.\n' | base64 | tr -d '\n')"
+    printf 'parent_host_b64=%s\n' "$(printf 'remote-mac' | base64)"
+    printf 'project_count=0\n'
+  } | FM_HOME="$MATE" FM_ROOT_OVERRIDE="$ROOT" "$ROOT/bin/fm-remote-home-provision.sh" 2>&1
+}
+rm -f "$MATE/.fm-secondmate-parent-prior"
+takeover "$HOST_PRIMARY" claim ios >/dev/null || fail "the host primary could not claim the mate"
+OUT=$(remote_reseed) && RC=0 || RC=$?
+[ "$RC" -ne 0 ] || fail "remote re-seeding a host-claimed home must refuse: $OUT"
+assert_contains "$OUT" "is currently bound to the firstmate home $HOST_PRIMARY on its own host" \
+  "the remote re-seed refusal must name the parent that holds the mate"
+assert_contains "$OUT" "fm-secondmate-takeover.sh claim ios" \
+  "the remote re-seed refusal must name the one command that moves the binding"
+binding_is "$HOST_RECORD" "a refused remote re-seed must leave the host binding untouched"
+prior_is "$REMOTE_RECORD" "a refused remote re-seed must leave the saved binding untouched"
+takeover "$HOST_PRIMARY" restore ios >/dev/null || fail "the host primary could not hand the mate back"
+OUT=$(remote_reseed) || fail "remote re-seeding a remotely bound home must still converge: $OUT"
+binding_is "$REMOTE_RECORD" "a converged remote re-seed must keep the remote binding"
+pass "remote re-seeding refuses a host-claimed home and still converges a remotely bound one"
 
 # --- the displaced primary refuses to claim or steer --------------------------
 # The mate is bound to the remote route again, so the host primary is displaced.

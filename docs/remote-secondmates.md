@@ -659,6 +659,7 @@ While a mate is bound to the other parent, this primary refuses to steer or clai
 That refusal names the primary that currently holds it, and the read-only and maintenance verbs stay available from either side so the split can be diagnosed.
 A binding that exists but cannot be trusted - malformed, symlinked, or corrupt - refuses on every one of those paths rather than being overwritten.
 Re-seeding never moves the binding either: `bin/fm-home-seed.sh` refuses a home whose record names any other parent, remote included, or cannot be parsed, and names `claim` as the way to move it.
+Remote re-seeding refuses the same way: `bin/fm-remote-home-provision.sh` converges an existing home only while its record is absent or already names the remote route.
 A home seeded before that record existed has none, which names no parent: such a mate is still steerable, and a claim simply establishes its record.
 
 A take-over does not move the replies the displaced parent was already waiting on.

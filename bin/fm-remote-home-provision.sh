@@ -162,6 +162,8 @@ if [ -e "$FM_HOME" ] || [ -L "$FM_HOME" ]; then
         || die "remote home has unsafe operational directory: $operational_dir"
     fi
   done
+  fm_secondmate_parent_binding_names "$FM_HOME" remote \
+    || die "$FM_SECONDMATE_PARENT_ERROR; provisioning does not move a parent binding, use bin/fm-secondmate-takeover.sh claim $ID"
   mkdir -p "$TMP/before/data"
   for rel in data/charter.md data/projects.md .fm-secondmate-home .fm-secondmate-parent; do
     existing="$FM_HOME/$rel"
