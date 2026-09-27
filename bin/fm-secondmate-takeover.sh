@@ -131,7 +131,9 @@ cmd_claim() { # <id>
       "$(this_home)" "$id"
     # The displaced parent's own expectations are on the mate's host, so say so
     # rather than implying this home can account for them.
-    if printf '%s\n' "$leg_out" | grep -q '^prior_route=local$'; then
+    if printf '%s\n' "$leg_out" | grep -q '^displaced=no$'; then
+      printf 'this take-over displaced no parent\n'
+    elif printf '%s\n' "$leg_out" | grep -q '^prior_route=local$'; then
       printf 'the displaced parent was a firstmate on the secondmate'\''s own host: any reply it was waiting on arrives here instead, and its own records stay on that host\n'
     else
       printf 'no parent on the secondmate'\''s own host was displaced by this take-over\n'
@@ -150,8 +152,14 @@ cmd_claim() { # <id>
   fi
   fm_secondmate_parent_locked "$ROUTE_HOME" fm_secondmate_parent_rebind "$ROUTE_HOME" local "$(this_home)" \
     || die "$FM_SECONDMATE_PARENT_ERROR"
-  printf 'takeover: %s is now bound to this home %s\n' "$id" "$(this_home)"
-  print_binding 'displaced parent, preserved for restore' "$(fm_secondmate_parent_prior_path "$ROUTE_HOME")"
+  if [ "$FM_SECONDMATE_PARENT_DISPLACED" = 0 ] && [ -n "$was_route" ]; then
+    printf 'takeover: %s is already bound to this home %s; nothing was displaced\n' "$id" "$(this_home)"
+    was_route=
+    was_home=
+  else
+    printf 'takeover: %s is now bound to this home %s\n' "$id" "$(this_home)"
+    print_binding 'displaced parent, preserved for restore' "$(fm_secondmate_parent_prior_path "$ROUTE_HOME")"
+  fi
   report_replies "$id" "$was_route" "$was_home"
 }
 

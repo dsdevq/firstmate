@@ -468,7 +468,13 @@ cmd_takeover() {
   case "$parent_host" in ''|*[!A-Za-z0-9._-]*) [ -z "$parent_host" ] || die "invalid parent host alias: $parent_host" ;; esac
   fm_secondmate_parent_locked "$TARGET_HOME" fm_secondmate_parent_rebind "$TARGET_HOME" remote '' "$parent_host" \
     || die "$FM_SECONDMATE_PARENT_ERROR"
-  printf 'takeover: %s is now bound to its remote parent\n' "$id"
+  if [ "$FM_SECONDMATE_PARENT_DISPLACED" = 1 ]; then
+    printf 'takeover: %s is now bound to its remote parent\n' "$id"
+    printf 'displaced=yes\n'
+  else
+    printf 'takeover: %s is already bound to its remote parent; nothing was displaced\n' "$id"
+    printf 'displaced=no\n'
+  fi
   cmd_parent "$id"
 }
 

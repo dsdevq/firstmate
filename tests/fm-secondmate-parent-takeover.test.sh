@@ -108,10 +108,28 @@ assert_contains "$OUT" "replies now land in $HOST_PRIMARY/state/ios.status" \
   "claim must say where the mate's replies land from now on"
 pass "a primary on the secondmate's own host claims a remotely bound mate"
 
-# A repeated or retried claim must not overwrite the binding restore hands back.
+# A repeated or retried claim must not overwrite the binding restore hands back,
+# nor report this home's own expectations as a displaced parent's.
+mkdir -p "$HOST_PRIMARY/state/pending-replies"
+cat > "$HOST_PRIMARY/state/pending-replies/corr-own001" <<REC
+schema=fm-pending-reply.v1
+corr_id=corr-own001
+task_id=ios
+parent_home=$HOST_PRIMARY
+parent_status=$HOST_PRIMARY/state/ios.status
+request_summary=report the nightly build
+phase=awaiting_report
+REC
 OUT=$(takeover "$HOST_PRIMARY" claim ios) || fail "a repeated claim failed: $OUT"
 binding_is "$HOST_RECORD" "a repeated claim must keep the mate bound to the claiming home"
 prior_is "$REMOTE_RECORD" "a repeated claim must keep the originally displaced binding for restore"
+assert_contains "$OUT" "takeover: ios is already bound to this home $HOST_PRIMARY; nothing was displaced" \
+  "a repeated claim must say it displaced nothing"
+assert_not_contains "$OUT" "the displaced parent" \
+  "a repeated claim must not describe a displaced parent"
+assert_contains "$OUT" "this home is still waiting on these replies, which can now arrive:" \
+  "a repeated claim must still list this home's own expectations as its own"
+rm -f "$HOST_PRIMARY/state/pending-replies/corr-own001"
 pass "a repeated claim keeps the displaced binding restore returns to"
 
 # --- the reverse take-over restores exactly what the claim displaced -----------
@@ -180,6 +198,44 @@ takeover "$HOST_PRIMARY" restore ios >/dev/null || fail "the host primary could 
 OUT=$(remote_reseed) || fail "remote re-seeding a remotely bound home must still converge: $OUT"
 binding_is "$REMOTE_RECORD" "a converged remote re-seed must keep the remote binding"
 pass "remote re-seeding refuses a host-claimed home and still converges a remotely bound one"
+
+# A claim that lands while provisioning is still converging the home must not be
+# overwritten by its final binding write, nor by the rollback that follows.
+CLAIM_HELD="$TMP_ROOT/provision-claim-held"
+CLAIM_GO="$TMP_ROOT/provision-claim-go"
+# shellcheck disable=SC2016 # Positional parameters expand in the child shell.
+FM_STATE_OVERRIDE="$HOST_PRIMARY/state" FM_ROOT_OVERRIDE="$ROOT" bash -c '
+  . "$1/bin/fm-wake-lib.sh"
+  . "$1/bin/fm-secondmate-parent-lib.sh"
+  fm_lock_acquire_wait "$2/.fm-secondmate-parent.lock" || exit 1
+  : > "$3"
+  while [ ! -e "$4" ]; do sleep 0.05; done
+  fm_secondmate_parent_rebind "$2" local "$5"
+  rc=$?
+  fm_lock_release "$2/.fm-secondmate-parent.lock"
+  exit "$rc"
+' _ "$ROOT" "$MATE" "$CLAIM_HELD" "$CLAIM_GO" "$HOST_PRIMARY" &
+CLAIMER_PID=$!
+waited=0
+while [ ! -e "$CLAIM_HELD" ]; do
+  waited=$((waited + 1))
+  [ "$waited" -le 200 ] || fail "test setup drifted: the concurrent claim never took the binding lock"
+  sleep 0.05
+done
+remote_reseed > "$TMP_ROOT/racing-provision.out" 2>&1 &
+PROVISION_PID=$!
+sleep 2
+: > "$CLAIM_GO"
+wait "$CLAIMER_PID" || fail "the concurrent claim failed"
+wait "$PROVISION_PID" && RC=0 || RC=$?
+OUT=$(cat "$TMP_ROOT/racing-provision.out")
+[ "$RC" -ne 0 ] || fail "provisioning must refuse once a concurrent claim has moved the binding: $OUT"
+assert_contains "$OUT" "fm-secondmate-takeover.sh claim ios" \
+  "the late provisioning refusal must name the one command that moves the binding"
+binding_is "$HOST_RECORD" "provisioning must not overwrite a claim made while it was running"
+prior_is "$REMOTE_RECORD" "provisioning must leave the concurrent claim's saved binding for restore"
+takeover "$HOST_PRIMARY" restore ios >/dev/null || fail "the host primary could not hand the mate back"
+pass "a claim made while provisioning runs is not overwritten by its write or its rollback"
 
 # --- the displaced primary refuses to claim or steer --------------------------
 # The mate is bound to the remote route again, so the host primary is displaced.
@@ -387,6 +443,15 @@ assert_contains "$OUT" "replies now land in the secondmate home's state/parent-r
 assert_contains "$OUT" "its own records stay on that host" \
   "the remote claim must say the displaced parent's own expectations are not readable from here"
 pass "the remote primary claims a host-bound mate through the real host-local leg"
+
+OUT=$(remote_takeover claim ios) || fail "a repeated remote claim failed: $OUT"
+binding_is "$REMOTE_RECORD" "a repeated remote claim must keep the remote binding"
+prior_is "$HOST_RECORD" "a repeated remote claim must keep the binding restore returns to"
+assert_contains "$OUT" "is already bound to its remote parent; nothing was displaced" \
+  "a repeated remote claim must say it displaced nothing"
+assert_not_contains "$OUT" "the displaced parent was a firstmate" \
+  "a repeated remote claim must not infer a displacement from the saved binding"
+pass "a repeated remote claim reports that it displaced nothing"
 
 OUT=$(remote_takeover restore ios) || fail "the remote restore failed: $OUT"
 binding_is "$HOST_RECORD" "the remote restore must reinstate the displaced binding byte for byte"

@@ -74,6 +74,19 @@ restore_owned_file() { # <relative-path>
     rm -f -- "$dest"
   fi
 }
+install_remote_binding() {
+  fm_secondmate_parent_binding_names "$FM_HOME" remote || return 1
+  if ! cp -- "$TMP/parent-binding" "$FM_HOME/.fm-secondmate-parent.tmp.$$" \
+    || ! mv -f -- "$FM_HOME/.fm-secondmate-parent.tmp.$$" "$FM_HOME/.fm-secondmate-parent"; then
+    rm -f -- "$FM_HOME/.fm-secondmate-parent.tmp.$$"
+    FM_SECONDMATE_PARENT_ERROR="could not install the durable parent binding"
+    return 1
+  fi
+}
+rollback_parent_binding() {
+  cmp -s -- "$TMP/parent-binding" "$FM_HOME/.fm-secondmate-parent" || return 0
+  restore_owned_file .fm-secondmate-parent
+}
 rollback() {
   local status=$? project
   if [ "$status" -ne 0 ] && [ "$PUBLISHED" -eq 0 ]; then
@@ -87,7 +100,7 @@ rollback() {
       restore_owned_file data/charter.md || true
       restore_owned_file data/projects.md || true
       restore_owned_file .fm-secondmate-home || true
-      restore_owned_file .fm-secondmate-parent || true
+      fm_secondmate_parent_locked "$FM_HOME" rollback_parent_binding || true
       [ "$CREATED_BACKLOG" -eq 0 ] || rm -f -- "$FM_HOME/data/backlog.md"
     fi
   fi
@@ -269,8 +282,9 @@ mv -f -- "$FM_HOME/data/charter.md.tmp.$$" "$FM_HOME/data/charter.md"
 cp "$PROJECT_REG" "$FM_HOME/data/projects.md.tmp.$$"
 mv -f -- "$FM_HOME/data/projects.md.tmp.$$" "$FM_HOME/data/projects.md"
 fm_secondmate_parent_record_render remote '' "$PARENT_HOST" \
-  > "$FM_HOME/.fm-secondmate-parent.tmp.$$" || die "could not render the durable parent binding"
-mv -f -- "$FM_HOME/.fm-secondmate-parent.tmp.$$" "$FM_HOME/.fm-secondmate-parent"
+  > "$TMP/parent-binding" || die "could not render the durable parent binding"
+fm_secondmate_parent_locked "$FM_HOME" install_remote_binding \
+  || die "$FM_SECONDMATE_PARENT_ERROR; provisioning does not move a parent binding, use bin/fm-secondmate-takeover.sh claim $ID"
 printf '%s\n' "$ID" > "$FM_HOME/.fm-secondmate-home.tmp.$$"
 mv -f -- "$FM_HOME/.fm-secondmate-home.tmp.$$" "$FM_HOME/.fm-secondmate-home"
 PUBLISHED=1

@@ -156,10 +156,13 @@ fm_secondmate_parent_record_render() { # <route> [parent_home] [parent_host]
 # repeated or retried claim cannot overwrite the binding to restore; only the
 # diagnostic-only parent_host is refreshed.
 # Returns 0 on success, 1 with FM_SECONDMATE_PARENT_ERROR set otherwise.
+# FM_SECONDMATE_PARENT_DISPLACED is 1 when a different parent's binding was
+# saved for restore, and 0 when the new binding displaced nothing.
 fm_secondmate_parent_rebind() { # <home> <route> [parent_home] [parent_host]
   local home=$1 route=$2 parent_home=${3-} parent_host=${4-}
   local current prior rendered tmp same_parent=0
   FM_SECONDMATE_PARENT_ERROR=
+  FM_SECONDMATE_PARENT_DISPLACED=0
   if [ ! -d "$home" ] || [ -L "$home" ]; then
     FM_SECONDMATE_PARENT_ERROR="secondmate home is unavailable or unsafe: $home"
     return 1
@@ -193,6 +196,7 @@ fm_secondmate_parent_rebind() { # <home> <route> [parent_home] [parent_host]
       FM_SECONDMATE_PARENT_ERROR="could not preserve the displaced parent binding at $prior"
       return 1
     fi
+    FM_SECONDMATE_PARENT_DISPLACED=1
   fi
   tmp="$current.tmp.$$"
   if ! printf '%s\n' "$rendered" > "$tmp" 2>/dev/null || ! mv -f -- "$tmp" "$current"; then
