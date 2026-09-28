@@ -1,0 +1,31 @@
+### 1. captain runs "enter" in a pane where the agent exited to a bare shell
+$ fm-afk-launch.sh enter --words 'merge it when green'   (FM_SUPERVISOR_TARGET=%0)
+Away posture recorded at 2026-09-28T19:00:02Z: hold-for-return only. No phone channel is configured; anything that needs you waits for your return. Your away instructions are recorded verbatim; the away session will carry them out where it can, and anything it is unsure of, or that needs you, waits for your return. Destructive, irreversible, and security-sensitive actions are never pre-authorizable, whatever the words say. Expected return: not given. Spend cap: 4 concurrent workers.
+Away posture (recorded):
+  entered: 2026-09-28T19:00:02Z
+  expected return: not given
+  spend cap: 4 concurrent workers
+  reach: hold-for-return only. No phone channel is configured; anything that needs you waits for your return.
+  your words (verbatim):
+    merge it when green
+Reporting: the away posture reports into this pane. Detaching or closing the terminal client is fine, but exiting the agent (for example /exit) stops all reporting for the rest of the window; the window is then recorded as failed and the failure leads the return brief.
+WARNING: this pane (%0) does not currently hold a live agent (dead); reports would have nowhere to land.
+
+### 2. daemon max-defer wedge on that dead-shell pane (FM_MAX_DEFER_SECS=60, escalation buffered 600s ago)
+--- .subsuper-inject-wedged (terminal failure record):
+fm away-mode FAILED: reporting stopped at 2026-09-28T20:00:02+0100 after 600s undelivered: the captain pane %0 no longer holds a live agent (agent exited or pane closed); 1 escalation(s) held for the return brief
+Buffered items:
+done: PR https://x/y/pull/9 checks green
+--- active alert log (herdr channel):
+herdr	away mode FAILED: the captain pane no longer holds a live agent, so reporting stopped for this away window (1 escalation(s) undelivered) - see /tmp/fm-demo.VyL7UM/demo/state/.subsuper-inject-wedged
+--- buffer held for the return brief (.subsuper-escalations):
+done: PR https://x/y/pull/9 checks green
+--- captain pane content (nothing typed into the shell):
+bash-5.2$
+
+### 3. a later tick: no re-alarm, no redelivery
+alert count: 1
+
+### 4. contrast: live agent pane (window renamed 2.1.19) classification
+supervisor_pane_agent_state tmux %1 -> alive
+supervisor_pane_agent_state tmux %0 -> dead
