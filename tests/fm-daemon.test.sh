@@ -2415,6 +2415,33 @@ test_max_defer_live_agent_unknown_composer_does_not_fail_window() {
   pass "max-defer on a live agent with an unknown composer keeps the repeating wedge, not a failed window"
 }
 
+# A captain pane id is classified by that pane, not by its window's name: a live
+# agent in a window whose name tmux would parse as another index or window.pane
+# (Claude Code's version title "2.1.19", or a plain "1") must still read alive,
+# never as the bare shell that the misparsed target happens to point at.
+test_supervisor_pane_state_ignores_index_like_window_names() {
+  local dir sock pane name
+  dir=$(make_supercase pane-state-window-name)
+  sock=$(private_tmux_server "$dir") || { pass "pane state by window name: SKIP (tmux absent)"; return 0; }
+  TMUX_TMPDIR="$sock" tmux new-session -d -s cap 'bash --norc --noprofile' \
+    || { rm -rf "$sock"; fail "pane state by window name: could not start a private tmux session"; }
+  TMUX_TMPDIR="$sock" tmux new-window -d -t cap:1 'bash --norc --noprofile'
+  TMUX_TMPDIR="$sock" tmux new-window -d -t cap:2 'bash --norc --noprofile'
+  pane=$(TMUX_TMPDIR="$sock" tmux new-window -d -P -F '#{pane_id}' -t cap:5 "$dir/claude 600")
+  sleep 0.5
+  for name in 2.1.19 1; do
+    TMUX_TMPDIR="$sock" tmux rename-window -t "$pane" "$name"
+    [ "$(TMUX_TMPDIR="$sock" supervisor_pane_agent_state tmux "$pane")" = alive ] || {
+      TMUX_TMPDIR="$sock" tmux kill-server 2>/dev/null || true
+      rm -rf "$sock"
+      fail "a live agent pane in a window named '$name' did not classify alive"
+    }
+  done
+  TMUX_TMPDIR="$sock" tmux kill-server 2>/dev/null || true
+  rm -rf "$sock"
+  pass "a live agent pane classifies alive whatever its window is named"
+}
+
 test_max_defer_vanished_pane_fails_window_even_without_alert_channel() {
   local dir state sock pane log first
   dir=$(make_supercase maxdefer-pane-gone)
@@ -3356,6 +3383,7 @@ test_max_defer_flushes_empty_idle_pane
 test_max_defer_pending_composer_alarms_without_typing
 test_max_defer_dead_shell_fails_window_terminally
 test_max_defer_live_agent_unknown_composer_does_not_fail_window
+test_supervisor_pane_state_ignores_index_like_window_names
 test_max_defer_vanished_pane_fails_window_even_without_alert_channel
 test_normal_flush_clears_stale_wedge_marker
 test_oversized_digest_is_bounded_and_kept_durable

@@ -919,13 +919,13 @@ test_return_brief_leads_with_a_failed_away_window() {
   contract_in "$dir" enter >/dev/null 2>&1 || fail "could not write the away-posture record"
   touch "$dir/home/state/.last-watcher-beat"
   # The daemon's terminal failure record (bin/fm-supervise-daemon.sh away_window_fail).
-  printf 'fm away-mode FAILED: reporting stopped at 2026-09-20T13:00:00+0000 after 65384s undelivered: the captain pane default:1 no longer holds a readable live agent (agent exited, pane closed, or unreadable); 1 escalation(s) held for the return brief\nBuffered items:\ndone: PR https://x/y/pull/9 checks green\n' \
+  printf 'fm away-mode FAILED: reporting stopped at 2026-09-20T13:00:00+0000 after 65384s undelivered: the captain pane default:1 no longer holds a live agent (agent exited or pane closed); 1 escalation(s) held for the return brief\nBuffered items:\ndone: PR https://x/y/pull/9 checks green\n' \
     > "$dir/home/state/.subsuper-inject-wedged"
   printf 'done: PR https://x/y/pull/9 checks green\n' > "$dir/home/state/.subsuper-escalations"
   : > "$dir/home/state/.fake-drain"
   out=$(run_return "$dir" begin) || fail "a failed window with no blockers should still clear the gate: $out"
   assert_contains "$out" 'AWAY WINDOW FAILED' "the failed window was not named"
-  assert_contains "$out" 'after 65384s undelivered: the captain pane default:1 no longer holds a readable live agent' "the failure detail was not carried"
+  assert_contains "$out" 'after 65384s undelivered: the captain pane default:1 no longer holds a live agent' "the failure detail was not carried"
   assert_not_contains "$out" 'no detected gap' "a failed window was reported as clean"
   fail_line=$(line_of "$out" 'AWAY WINDOW FAILED')
   health_line=$(line_of "$out" 'Supervisor health:')

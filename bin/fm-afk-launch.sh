@@ -411,7 +411,7 @@ fm_afk_launch_reporting_warning() {
   case "$state" in
     alive) printf 'This pane (%s) currently holds a live agent.\n' "$target" ;;
     dead|missing) printf 'WARNING: this pane (%s) does not currently hold a live agent (%s); reports would have nowhere to land.\n' "$target" "$state" ;;
-    *) printf 'This pane could not be read to confirm a live agent (%s).\n' "${state:-unreadable}" ;;
+    *) printf 'Whether this pane holds a live agent could not be read (%s).\n' "${state:-unreadable}" ;;
   esac
 }
 
