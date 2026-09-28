@@ -29,6 +29,28 @@ TMP_ROOT=$(fm_test_tmproot fm-daemon-tests)
 FM_DAEMON_PRIMARY_HARNESS=claude
 export FM_DAEMON_PRIMARY_HARNESS
 
+# private_tmux_server tests register their socket dir here so an assertion
+# failure (fail() exits the whole suite) still reaps the private server and
+# socket directory instead of leaking them.
+FM_DAEMON_TEST_TMUX_SOCKS=()
+fm_daemon_test_tmux_cleanup() {
+  local s
+  for s in "${FM_DAEMON_TEST_TMUX_SOCKS[@]:-}"; do
+    [ -n "$s" ] || continue
+    TMUX_TMPDIR="$s" tmux kill-server 2>/dev/null || true
+    rm -rf "$s"
+  done
+}
+fm_daemon_test_cleanup() {
+  fm_daemon_test_tmux_cleanup
+  fm_test_cleanup
+}
+trap fm_daemon_test_cleanup EXIT
+trap 'fm_daemon_test_cleanup; exit 130' INT
+trap 'fm_daemon_test_cleanup; exit 143' TERM
+trap 'fm_daemon_test_cleanup; exit 129' HUP
+trap 'fm_daemon_test_cleanup; exit 131' QUIT
+
 # What the pinned claude primary received: each typed line, with every
 # record-backed doorbell followed by the envelope its record holds.
 delivered_digest() {  # <sent-log>
@@ -2331,6 +2353,7 @@ test_max_defer_dead_shell_fails_window_terminally() {
   state="$dir/state"
   log="$dir/alert.log"; : > "$log"
   sock=$(private_tmux_server "$dir") || { pass "max-defer dead shell: SKIP (tmux absent)"; return 0; }
+  FM_DAEMON_TEST_TMUX_SOCKS+=("$sock")
   TMUX_TMPDIR="$sock" tmux new-session -d -s captain 'bash --norc --noprofile' \
     || { rm -rf "$sock"; fail "max-defer dead shell: could not start a private tmux pane"; }
   pane=$(TMUX_TMPDIR="$sock" tmux display-message -p -t captain '#{pane_id}')
@@ -2385,6 +2408,7 @@ test_max_defer_live_agent_unknown_composer_does_not_fail_window() {
   state="$dir/state"
   log="$dir/alert.log"; : > "$log"
   sock=$(private_tmux_server "$dir") || { pass "max-defer live agent: SKIP (tmux absent)"; return 0; }
+  FM_DAEMON_TEST_TMUX_SOCKS+=("$sock")
   TMUX_TMPDIR="$sock" tmux new-session -d -s captain "$dir/claude 600" \
     || { rm -rf "$sock"; fail "max-defer live agent: could not start a private tmux pane"; }
   pane=$(TMUX_TMPDIR="$sock" tmux display-message -p -t captain '#{pane_id}')
@@ -2423,6 +2447,7 @@ test_supervisor_pane_state_ignores_index_like_window_names() {
   local dir sock pane name
   dir=$(make_supercase pane-state-window-name)
   sock=$(private_tmux_server "$dir") || { pass "pane state by window name: SKIP (tmux absent)"; return 0; }
+  FM_DAEMON_TEST_TMUX_SOCKS+=("$sock")
   TMUX_TMPDIR="$sock" tmux new-session -d -s cap 'bash --norc --noprofile' \
     || { rm -rf "$sock"; fail "pane state by window name: could not start a private tmux session"; }
   TMUX_TMPDIR="$sock" tmux new-window -d -t cap:1 'bash --norc --noprofile'
@@ -2448,6 +2473,7 @@ test_max_defer_vanished_pane_fails_window_even_without_alert_channel() {
   state="$dir/state"
   log="$dir/alert.log"; : > "$log"
   sock=$(private_tmux_server "$dir") || { pass "max-defer vanished pane: SKIP (tmux absent)"; return 0; }
+  FM_DAEMON_TEST_TMUX_SOCKS+=("$sock")
   if ! TMUX_TMPDIR="$sock" tmux new-session -d -s keep "$dir/claude 600" \
     || ! TMUX_TMPDIR="$sock" tmux new-session -d -s captain "$dir/claude 600"; then
     TMUX_TMPDIR="$sock" tmux kill-server 2>/dev/null || true

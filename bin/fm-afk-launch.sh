@@ -772,6 +772,10 @@ fm_afk_launch_start() {
   done
   if ! fm_afk_launch_reconcile; then
     result=1
+  elif [ "$had_afk" -eq 1 ]; then
+    # Restarting an unfinished window, not a fresh entry: preserve its
+    # artifacts (including a terminal-failure marker) for the return brief.
+    result=0
   else
     if fm_afk_clear_stale_artifacts "$FM_AFK_LAUNCH_STATE"; then
       result=0
@@ -829,7 +833,12 @@ fm_afk_launch_start_native() {
   done
   fm_afk_launch_reconcile || result=1
   if [ "$result" -eq 0 ]; then
-    if ! fm_afk_clear_stale_artifacts "$FM_AFK_LAUNCH_STATE"; then
+    # Restarting an unfinished window (state/.afk already existed) is not a
+    # fresh entry - preserve its artifacts, including a terminal-failure
+    # marker and its buffer, for the return brief.
+    if [ "$had_afk" -eq 1 ]; then
+      fm_afk_launch_flag_write || result=1
+    elif ! fm_afk_clear_stale_artifacts "$FM_AFK_LAUNCH_STATE"; then
       fm_afk_launch_log "failed to clear stale away-mode artifacts"
       result=1
     elif ! fm_afk_launch_flag_write; then

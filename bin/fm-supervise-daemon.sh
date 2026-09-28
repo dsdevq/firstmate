@@ -1203,12 +1203,15 @@ away_window_fail() {  # <state> <age-seconds>
   target="${FM_SUPERVISOR_TARGET:-$FM_SUPERVISOR_TARGET_DEFAULT}"
   n=$(wc -l < "$state/.subsuper-escalations" 2>/dev/null || echo 0)
   n=${n//[!0-9]/}
-  {
+  if ! {
     printf '%s reporting stopped at %s after %ss undelivered: the captain pane %s no longer holds a live agent (agent exited or pane closed); %s escalation(s) held for the return brief\n' \
       "$AWAY_FAILED_PREFIX" "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$age" "$target" "${n:-0}"
     printf 'Buffered items:\n'
     cat "$state/.subsuper-escalations" 2>/dev/null
-  } 2>/dev/null > "$marker" || true
+  } 2>/dev/null > "$marker"; then
+    log "ERROR: away window FAILED but could not write terminal-failure marker $marker; window not yet recorded, will retry"
+    return 1
+  fi
   [ "$AWAY_FAILED_NOTIFIED" -eq 1 ] && return 0
   AWAY_FAILED_NOTIFIED=1
   log "ERROR: away window FAILED: escalations undelivered ${age}s and the captain pane $target no longer holds a live agent; delivery stopped for this window, buffer held for the return brief, marker $marker"

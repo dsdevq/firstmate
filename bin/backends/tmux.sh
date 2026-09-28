@@ -350,7 +350,7 @@ fm_backend_tmux_agent_state() {  # <target>
 # present (a verified session:window, or an exact pane id such as $TMUX_PANE).
 # Prints alive, dead, ambiguous, or unreadable.
 fm_backend_tmux_pane_agent_state() {  # <target>
-  local target=$1 comm foreground name pid fg_seen=0 fg_shell=0 fg_other=0
+  local target=$1 comm foreground name pid fg_seen=0 fg_shell=0 fg_other=0 argv0s
   foreground=$(fm_backend_tmux_foreground_comms "$target")
   while IFS= read -r name; do
     [ -n "$name" ] || continue

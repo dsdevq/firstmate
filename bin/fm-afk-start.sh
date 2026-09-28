@@ -151,6 +151,8 @@ fm_afk_start_main() {
   esac
 
   mkdir -p "$FM_AFK_STATE"
+  local had_afk=0
+  [ -e "$FM_AFK_STATE/.afk" ] && had_afk=1
   if [ "${FM_AFK_STATE_PREPARED:-0}" = 1 ]; then
     [ -f "$FM_AFK_STATE/.afk" ] || { echo "afk: launcher-prepared state is missing" >&2; return 1; }
   else
@@ -170,7 +172,10 @@ fm_afk_start_main() {
 
   # Fresh start: clear the previous away session's stale delivery artifacts
   # before the new daemon can surface them (fix for the leaked-artifact defect).
-  if [ "${FM_AFK_STATE_PREPARED:-0}" != 1 ]; then
+  # A restart of an unfinished window (state/.afk already existed) is not a
+  # fresh entry - preserve its artifacts, including a terminal-failure marker
+  # and its buffer, for the return brief.
+  if [ "${FM_AFK_STATE_PREPARED:-0}" != 1 ] && [ "$had_afk" -eq 0 ]; then
     fm_afk_clear_stale_artifacts "$FM_AFK_STATE"
   fi
 
