@@ -102,7 +102,7 @@ A post-teardown visual review can complete against the surviving report and dura
 
 `complete` accepts `--none` as an explicit semantic inventory result.
 `--none` is refused while the origin still has a lifecycle-open keyed status decision.
-Before recording completion, `complete` verifies every listed task against tasks-axi.
+Before recording completion, `complete` verifies every listed task with the same durability check `verify` applies.
 
 With a non-empty inventory, `complete` appends a `captain-held [key=<key>]` transfer event for every still-open keyed status decision.
 The event names the reviewed inventory.
@@ -466,7 +466,7 @@ That name-only guess is accepted solely for a single row still held for the capt
 Two such rows refuse rather than attest.
 Because that acceptance rests on a name rather than on evidence, `complete` names the resolved row beside each prefix-attested legacy id in its completion line, so the guess is auditable after the fact.
 
-A markdown home keeps its legacy rows verbatim, so its resolution is unchanged.
+A markdown home keeps its legacy rows verbatim, so its resolution is unchanged; an answered legacy row that `done_keep` rotated into the archive is still accepted, as `verify` describes.
 
 ### The `fm-decision-hold.sh` shim
 
