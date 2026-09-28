@@ -17,7 +17,7 @@ The configured active alert fires once for the window, and delivery stops for th
 When no active channel is configured or reachable, that marker is the only signal, and it still leads the return brief.
 On Linux with no `config/wedge-alarm` directive (and no `FM_WEDGE_ALARM_CHANNEL`), `auto` resolves to no active channel, so the in-window signal is the durable marker only and the captain learns of the failure at return; configure a channel under [Channels](#channels) to be told during the window.
 `bin/fm-afk-return.sh` reads that prefix and opens the return brief with the failure ahead of supervisor health, so a failed window never reads as a quiet success.
-The away read-back warns at entry that exiting the agent, as opposed to detaching the terminal, stops reporting for the window, and says whether the captain pane currently holds a live agent (`bin/fm-afk-launch.sh propose`).
+The away read-back warns at entry that exiting the agent, as opposed to detaching the terminal, stops reporting for the window, and says whether the captain pane currently holds a live agent (`bin/fm-afk-launch.sh enter`).
 
 ## Channels
 
