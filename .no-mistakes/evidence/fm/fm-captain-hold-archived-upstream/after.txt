@@ -1,0 +1,5 @@
+### AFTER fix (HEAD 1f511dc)
+ok - verify and complete resolve a captain answer rotated into the markdown archive
+ok - verify and complete resolve a legacy captain answer rotated into the markdown archive
+ok - an archived row with no recorded captain answer still fails the completion gate
+exit=0

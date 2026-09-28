@@ -1,0 +1,32 @@
+$ fm-captain-hold.sh hold pick-db ...
+pick-db
+$ fm-captain-hold.sh answer pick-db --decision-file d.txt
+answered: pick-db
+$ tasks-axi prune --keep 0 --state done   # done_keep rotation
+ok: prune done -> archived 1 (kept 0)
+help[1]:
+  - Run `tasks-axi list --state done` to see retained Done items
+$ grep -c pick-db data/backlog.md
+0
+$ cat data/done-archive.md
+
+## Archived 2026-09-28
+- [x] pick-db - Pick the DB (repo: sample) (kind: captain) (done 2026-09-28) (hold: captain choice pending) (hold-kind: captain)
+  Resolution recorded by fm-captain-hold.
+  Decision digest: 42525d338d94e36eabaab2604cb2dc02b70be0772ed67bbea49901a7d8ec83d3
+  Resolution mode: answered
+
+  Captain decision:
+  Captain chose Postgres.
+
+$ tasks-axi show pick-db
+error: "Task \"pick-db\" not found in this backlog"
+code: NOT_FOUND
+help[1]: Run `tasks-axi list` to see existing tasks
+exit=1
+$ fm-captain-hold.sh verify scoutX
+verified: scoutX captain-call inventory
+exit=0
+$ fm-captain-hold.sh complete scoutX --none
+complete: scoutX captain-call inventory reviewed (pick-db)
+exit=0
