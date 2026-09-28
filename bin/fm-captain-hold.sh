@@ -834,6 +834,10 @@ resolve_entry() {  # <origin-or-empty> <entry>; prints "<id> <how>" or fails
   }
   if [ -n "$origin" ] && [ "$origin" != "$BINDING_ANY" ]; then
     legacy=$(legacy_hold_id "$origin" "$entry")
+    archived=$(resolve_archived_answer_entry "$legacy") && {
+      printf '%s' "$archived"
+      return 0
+    }
     fail "no captain-held task $entry and no migrated hold for it in this home's configured backlog (data directory $DATA); the nearest legacy identity $legacy also resolves to nothing"
   fi
   fail "no captain-held task $entry and no migrated hold for it in this home's configured backlog (data directory $DATA)"
