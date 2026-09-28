@@ -1198,17 +1198,21 @@ supervisor_pane_agent_gone() {
 }
 
 away_window_fail() {  # <state> <age-seconds>
-  local state=$1 age=$2 marker target n
+  local state=$1 age=$2 marker target n tmp
   marker="$state/.subsuper-inject-wedged"
   target="${FM_SUPERVISOR_TARGET:-$FM_SUPERVISOR_TARGET_DEFAULT}"
-  n=$(wc -l < "$state/.subsuper-escalations" 2>/dev/null || echo 0)
+  n=$({ wc -l < "$state/.subsuper-escalations"; } 2>/dev/null || echo 0)
   n=${n//[!0-9]/}
+  tmp="$marker.tmp.$$"
   if ! {
-    printf '%s reporting stopped at %s after %ss undelivered: the captain pane %s no longer holds a live agent (agent exited or pane closed); %s escalation(s) held for the return brief\n' \
-      "$AWAY_FAILED_PREFIX" "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$age" "$target" "${n:-0}"
-    printf 'Buffered items:\n'
-    cat "$state/.subsuper-escalations" 2>/dev/null
-  } 2>/dev/null > "$marker"; then
+    {
+      printf '%s reporting stopped at %s after %ss undelivered: the captain pane %s no longer holds a live agent (agent exited or pane closed); %s escalation(s) held for the return brief\n' \
+        "$AWAY_FAILED_PREFIX" "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$age" "$target" "${n:-0}"
+      printf 'Buffered items:\n'
+      cat "$state/.subsuper-escalations" 2>/dev/null || true
+    } > "$tmp" && mv -f "$tmp" "$marker"
+  } 2>/dev/null; then
+    rm -f "$tmp" 2>/dev/null
     log "ERROR: away window FAILED but could not write terminal-failure marker $marker; window not yet recorded, will retry"
     return 1
   fi

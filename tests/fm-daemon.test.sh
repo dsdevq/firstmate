@@ -2502,6 +2502,42 @@ test_max_defer_vanished_pane_fails_window_even_without_alert_channel() {
   pass "a vanished captain pane fails the away window durably even when no active alert channel is configured"
 }
 
+# The terminal-failure marker is the durable record of a failed window, so it is
+# only ever published complete: an unwritable state dir leaves no marker, no
+# alert and no process-level "already notified" flag (the next tick retries);
+# a buffer that vanished before the write still publishes the failure record.
+test_away_window_fail_publishes_marker_atomically() {
+  local dir state log first
+  dir=$(make_supercase away-fail-atomic)
+  state="$dir/state"
+  log="$dir/alert.log"; : > "$log"
+  escalate_add "$state" "done: PR https://x/y/pull/9 checks green"
+  afk_enter "$state"
+  AWAY_FAILED_NOTIFIED=0
+  chmod a-w "$state"
+  if FM_WEDGE_ALARM_LOG="$log" FM_WEDGE_ALARM_CHANNEL=herdr away_window_fail "$state" 600; then
+    chmod u+w "$state"
+    fail "away_window_fail reported success although the marker could not be written"
+  fi
+  chmod u+w "$state"
+  [ ! -e "$state/.subsuper-inject-wedged" ] || fail "a failed marker write left a partial marker behind"
+  ! ls "$state"/.subsuper-inject-wedged.tmp.* >/dev/null 2>&1 || fail "a failed marker write leaked its temp file"
+  [ ! -s "$log" ] || fail "alerted although the window was not recorded: $(cat "$log")"
+  [ "$AWAY_FAILED_NOTIFIED" -eq 0 ] || fail "marked the window notified although it was not recorded"
+  away_window_failed "$state" && fail "the window reads as failed with no marker"
+  FM_WEDGE_ALARM_LOG="$log" FM_WEDGE_ALARM_CHANNEL=herdr away_window_fail "$state" 600 \
+    || fail "the retry after the state dir became writable did not record the failure"
+  first=$(head -1 "$state/.subsuper-inject-wedged")
+  case "$first" in "fm away-mode FAILED:"*) ;; *) fail "the retried marker does not lead with the failure: '$first'" ;; esac
+  [ "$(grep -c '^herdr' "$log")" -eq 1 ] || fail "the retry did not fire exactly one alert: $(cat "$log")"
+  rm -f "$state/.subsuper-inject-wedged" "$state/.subsuper-escalations"
+  AWAY_FAILED_NOTIFIED=0
+  FM_WEDGE_ALARM_LOG="$log" FM_WEDGE_ALARM_CHANNEL=off away_window_fail "$state" 600 \
+    || fail "a vanished buffer stopped the failure record from being published"
+  away_window_failed "$state" || fail "the failure record is not readable after a vanished-buffer write"
+  pass "the terminal-failure marker is published complete or not at all, and a failed write retries with one alert"
+}
+
 test_normal_flush_clears_stale_wedge_marker() {
   local dir state fakebin sent
   dir=$(make_bordered_case normal-clears-wedge)
@@ -3411,6 +3447,7 @@ test_max_defer_dead_shell_fails_window_terminally
 test_max_defer_live_agent_unknown_composer_does_not_fail_window
 test_supervisor_pane_state_ignores_index_like_window_names
 test_max_defer_vanished_pane_fails_window_even_without_alert_channel
+test_away_window_fail_publishes_marker_atomically
 test_normal_flush_clears_stale_wedge_marker
 test_oversized_digest_is_bounded_and_kept_durable
 test_digest_budget_counts_omitted_events
