@@ -78,7 +78,9 @@
 #                              non-visible terminal for the detected backend and
 #                              record it. Idempotent: an already-running daemon
 #                              just refreshes state/.afk; a recorded-but-dead
-#                              terminal is reconciled (closed by id) first.
+#                              terminal is reconciled (closed by id) first. A
+#                              restart with state/.afk already present keeps the
+#                              window's artifacts; only a fresh entry clears them.
 #   fm-afk-launch.sh start-native
 #                              Prepare lifecycle state for a harness-native
 #                              background job and record that no terminal exists.

@@ -252,7 +252,7 @@ The single-line format makes submission unambiguous across harnesses; the carrie
 ### Stale-artifact lifecycle
 
 Treat `state/.subsuper-escalations`, its `.since` sidecar, `state/.subsuper-inject-wedged`, and `state/.subsuper-unknown-acked` as session-scoped delivery artifacts, not as the durable work record.
-Always enter through `bin/fm-afk-launch.sh`, which clears prior-session artifacts only for a fresh entry and preserves the current session's buffer on refresh.
+Always enter through `bin/fm-afk-launch.sh`, which clears prior-session artifacts only for a fresh entry (no `state/.afk`) and preserves the current session's buffer on refresh or on a restart of an unfinished window (`docs/wedge-alarm.md` "Terminal away-window failure").
 Always exit through `bin/fm-afk-launch.sh stop`, which keeps `state/.afk` present through the daemon's shutdown flush, clears it, and archives the posture record last.
 `docs/herdr-backend.md` "Away-mode supervisor support" owns the current mechanism, and `docs/verification/runtime-backends.md` "Away-mode transport" owns active evidence.
 

@@ -7,10 +7,11 @@
 #   FM_AFK_STATE_PREPARED=1, checks state/.supervise-daemon.lock, and:
 #     - prints "afk: daemon already running pid=<pid>" then exits 0 when that
 #       lock is held by a live daemon (a REFRESH: no stale-artifact clear);
-#     - otherwise clears any prior away session's stale escalation artifacts
-#       (fm_afk_clear_stale_artifacts) for a direct, non-prepared start, then
-#       execs bin/fm-supervise-daemon.sh in the foreground. A prepared start was
-#       already cleared transactionally by bin/fm-afk-launch.sh.
+#     - otherwise clears a prior away session's stale escalation artifacts
+#       (fm_afk_clear_stale_artifacts) for a direct, non-prepared, FRESH start
+#       (no state/.afk yet; a restart keeps them), then execs
+#       bin/fm-supervise-daemon.sh in the foreground. A prepared start was
+#       already handled transactionally by bin/fm-afk-launch.sh.
 #
 # This file is sourceable: its BASH_SOURCE guard keeps main from running, while
 # exposing the daemon-lock helpers and fm_afk_clear_stale_artifacts. Sourcing it
@@ -57,8 +58,10 @@ fm_afk_start_usage() {
 # fresh by the daemon's heartbeat catch-all scan and the durable
 # state/.wake-queue replay (see docs/herdr-backend.md "Away-mode stale-artifact
 # lifecycle" and bin/fm-supervise-daemon.sh's escalate_add/inject_wedge_alarm).
-# NOT called on a refresh (daemon already alive), so the current session's own
-# buffered escalations are preserved.
+# NOT called on a refresh (daemon already alive) or on a restart of an unfinished
+# window (state/.afk already present), so the current window's own buffered
+# escalations and any terminal-failure marker are preserved
+# (docs/wedge-alarm.md "Terminal away-window failure").
 fm_afk_clear_stale_artifacts() {  # <state-dir>
   local state=$1
   rm -f "$state/.subsuper-escalations" \

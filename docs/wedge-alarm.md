@@ -14,6 +14,8 @@ The composer guard is unchanged: a failed window never injects anywhere.
 
 Failure rewrites `state/.subsuper-inject-wedged` so its first line begins `fm away-mode FAILED:`, naming the time, the undelivered age, and the pane, followed by the buffered items.
 The configured active alert fires once for the window, and delivery stops for the rest of it while the buffer stays intact for the return.
+The marker is published atomically (a temp file moved over it), so the `FAILED:` first line only ever exists in a complete file; if the publish fails, the window is not yet recorded, no alert fires, and a later tick retries.
+Restarting the daemon for an unfinished window (`state/.afk` already present) preserves the marker and the held buffer, while a fresh entry still clears them, so the replacement daemon and the return brief still report the failure.
 When no active channel is configured or reachable, that marker is the only signal, and it still leads the return brief.
 On Linux with no `config/wedge-alarm` directive (and no `FM_WEDGE_ALARM_CHANNEL`), `auto` resolves to no active channel, so the in-window signal is the durable marker only and the captain learns of the failure at return; configure a channel under [Channels](#channels) to be told during the window.
 `bin/fm-afk-return.sh` reads that prefix and opens the return brief with the failure ahead of supervisor health, so a failed window never reads as a quiet success.
