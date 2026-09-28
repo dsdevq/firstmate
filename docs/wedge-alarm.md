@@ -8,7 +8,7 @@ The durable marker and tmux flash remain as additional signals.
 ## Terminal away-window failure
 
 A wedge whose captain pane no longer holds a live agent is not a transient defer, because nothing will ever read an injection there.
-When the max-defer retry cannot confirm a submit and the process-level classifier `fm_backend_agent_state` (through `supervisor_pane_agent_state`) proves the captain pane `dead` or `missing` - the agent exited to a bare shell, or the pane is authoritatively gone - the daemon ends the away window as failed.
+When the max-defer retry cannot confirm a submit and `supervisor_pane_agent_state` (`bin/fm-supervisor-target-lib.sh`, returning `fm_backend_agent_state` verdicts and classifying a bare tmux pane id by that exact pane) proves the captain pane `dead` or `missing` - the agent exited to a bare shell, or the pane is authoritatively gone - the daemon ends the away window as failed.
 Missing proof of liveness is never proof of death: an `alive` agent, and every `ambiguous`, `unreadable`, or `unverified` reading (a failed capture, a blank unidentified row, a dialog or picker, a backend server that briefly cannot be queried), stays an ordinary wedge that keeps the buffer and the rate-limited alarm above, so a later tick can still deliver.
 The composer guard is unchanged: a failed window never injects anywhere.
 
