@@ -916,8 +916,7 @@ test_return_brief_leads_with_a_failed_away_window() {
   local dir out fail_line health_line
   dir="$TMP_ROOT/brief-failed-window"
   install_runner "$dir"
-  contract_in "$dir" propose >/dev/null 2>&1 || fail "could not propose the away-posture record"
-  contract_in "$dir" confirm >/dev/null 2>&1 || fail "could not write the away-posture record"
+  contract_in "$dir" enter >/dev/null 2>&1 || fail "could not write the away-posture record"
   touch "$dir/home/state/.last-watcher-beat"
   # The daemon's terminal failure record (bin/fm-supervise-daemon.sh away_window_fail).
   printf 'fm away-mode FAILED: reporting stopped at 2026-09-20T13:00:00+0000 after 65384s undelivered: the captain pane default:1 no longer holds a readable live agent (agent exited, pane closed, or unreadable); 1 escalation(s) held for the return brief\nBuffered items:\ndone: PR https://x/y/pull/9 checks green\n' \
