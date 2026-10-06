@@ -1163,7 +1163,8 @@ record_claude_busy() {  # <state-dir> <id>
 test_home_summary_page_fields_come_from_structured_state() {
   local home fakebin out ask bad_ask
   home=$(make_home summary-page-fields)
-  mkdir -p "$home/projects/ship-wt" "$home/projects/scout-wt" "$home/projects/local-wt" "$home/projects/paused-wt"
+  mkdir -p "$home/projects/ship-wt" "$home/projects/scout-wt" "$home/projects/local-wt" "$home/projects/paused-wt" \
+    "$home/projects/blocked-wt"
   ask='{"question":"Which export format ships first?","options":[{"id":"csv","label":"CSV","recommended":false},{"id":"json","label":"JSON","recommended":true}],"free_text_allowed":true,"link":"https://board.example/session/b1"}'
   bad_ask='{"question":"Reserved answer","options":[{"id":"reconcile","label":"Re-check","recommended":false}],"free_text_allowed":false}'
   cat > "$home/data/backlog.md" <<EOF
@@ -1172,6 +1173,7 @@ test_home_summary_page_fields_come_from_structured_state() {
 - [ ] scout-b - SCOUT alpha: investigate the flaky upload path (repo: alpha) (kind: scout) (since 2026-07-08)
 - [ ] local-c - fix: Local landing for alpha/beta (repo: alpha) (kind: ship) (since 2026-07-09)
 - [ ] paused-d - Wait for the vendor window (repo: alpha) (kind: ship) (since 2026-07-09)
+- [ ] blocked-e - Wire the widget into the page blocked-by: ship-a (repo: alpha) (kind: ship) (since 2026-07-10)
 
 ## Queued
 - [ ] ask-hold - Choose the export format (repo: alpha) (kind: captain) (hold: Options: CSV or JSON?) (hold-kind: captain)
@@ -1209,6 +1211,10 @@ EOF
     "project=alpha" "harness=claude" "kind=ship" "mode=no-mistakes" "yolo=off"
   record_claude_idle "$home/state" paused-d
   printf 'paused: waiting for the vendor window\n' > "$home/state/paused-d.status"
+  fm_write_meta "$home/state/blocked-e.meta" "window=firstmate:fm-blocked-e" "worktree=$home/projects/blocked-wt" \
+    "project=alpha" "harness=claude" "kind=ship" "mode=no-mistakes" "yolo=off"
+  record_claude_idle "$home/state" blocked-e
+  printf 'paused: waiting for ship-a to land\n' > "$home/state/blocked-e.status"
   fakebin=$(make_fakebin "$home")
   out=$(PATH="$fakebin:$PATH" FM_HOME="$home" FM_SNAPSHOT_NOW=2026-07-25T00:00:00Z \
     FM_SNAPSHOT_SECONDMATE_QUEUED=4 "$SNAPSHOT" --secondmate-home-summary)
@@ -1268,14 +1274,18 @@ EOF
     and ($h["parked-hold"].restart.kind == null)
     and ($h["paused-d"].source == "child-state" and $h["paused-d"].restart.kind == "event"
          and $h["paused-d"].title_plain == "Wait for the vendor window")
+    and ($h["blocked-e"].source == "child-state"
+         and $h["blocked-e"].restart.kind == "after_work" and $h["blocked-e"].restart.blocker_ids == ["ship-a"]
+         and $h["blocked-e"].unresolved_blocker_ids == ["ship-a"] and $h["blocked-e"].blocked_by == "ship-a"
+         and $h["blocked-e"].title_plain == "Wire the widget into the page")
     and ($h["ask-hold"].project == "alpha" and $h["ask-hold"].title_plain == "Choose the export format")
     and all(.holds[]; .restart.kind != "proposals")
   ' >/dev/null || fail "parked rows did not carry structured restart conditions: $out"
   out=$(PATH="$fakebin:$PATH" FM_HOME="$home" FM_SNAPSHOT_NOW=2026-07-25T00:00:00Z \
     FM_SNAPSHOT_SECONDMATE_QUEUED=3 "$SNAPSHOT" --secondmate-home-summary)
   printf '%s' "$out" | jq -e '
-    (.holds | length) == 3 and .counts.holds == 8
-    and any(.omitted[]; . == {surface:"holds",count:5})
+    (.holds | length) == 3 and .counts.holds == 9
+    and any(.omitted[]; . == {surface:"holds",count:6})
   ' >/dev/null || fail "the capped holds list must disclose its real total: $out"
   pass "home summary exposes asks, working, landed, and parked page fields from structured state only"
 }

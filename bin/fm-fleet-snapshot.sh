@@ -1185,12 +1185,14 @@ secondmate_home_summary_json() {  # <backlog-json-file> <tasks-json-file>
            | select(.id == $work.id and (.current_state.state == "parked" or .current_state.state == "paused" or .current_state.state == "blocked"))
            | select(($work.hold_reason != null and $work.hold_kind != null) | not)
            | . as $child
-           | {id,title:((.backlog.title // .id) | trunc(90)),blocked_by:null,
-              blocked_by_ids:[],unresolved_blocker_ids:[],
+           | {id,title:((.backlog.title // .id) | trunc(90)),
+              blocked_by:(($work.unresolved_blocker_ids | join(",")) | if . == "" then null else trunc(120) end),
+              blocked_by_ids:($work.blocked_by_ids | map(trunc(120))),
+              unresolved_blocker_ids:($work.unresolved_blocker_ids | map(trunc(120))),
               reason:((.current_state.detail // .current_state.state) | trunc(120)),source:"child-state",
               project:(($work.repo // null) | if . == null then null else trunc(120) end),
               title_plain:($work | plain_title),
-              restart:({} | restart($child.current_state.state;
+              restart:($work | restart($child.current_state.state;
                 ($child.current_state.detail // $child.current_state.state)))} ]) as $holds_all
     | ($backlog.present == true
        and ($unstructured_current | length) == 0
