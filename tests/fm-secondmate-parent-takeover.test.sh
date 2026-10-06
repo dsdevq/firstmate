@@ -86,6 +86,40 @@ prior_is() { # <expected-record-text> <msg>
   cmp -s "$MATE/.fm-secondmate-parent-prior" <(printf '%s\n' "$1") || fail "$2"
 }
 
+# A background command is blocked on the binding lock when it is polling for it:
+# the lock wait sleeps between attempts, so a live sleep child of that process is
+# the observable proof that it got past every earlier check and is waiting to take
+# the lock for its own binding write.
+wait_blocked_on_binding_lock() { # <pid> <what>
+  local pid=$1 what=$2 waited=0
+  until pgrep -x -P "$pid" sleep >/dev/null 2>&1; do
+    waited=$((waited + 1))
+    [ "$waited" -le 1000 ] || fail "test setup drifted: $what never blocked on the binding lock"
+    sleep 0.01
+  done
+}
+# Hold the binding lock in the background and, once released by <go>, replace the
+# live binding with <record-text> before letting go of the lock: a second primary
+# claiming the mate while this process's caller was still waiting its turn.
+hold_binding_lock_then_write() { # <held-file> <go-file> <record-text>
+  # shellcheck disable=SC2016 # Positional parameters expand in the child shell.
+  FM_STATE_OVERRIDE="$HOST_PRIMARY/state" FM_ROOT_OVERRIDE="$ROOT" bash -c '
+    . "$1/bin/fm-wake-lib.sh"
+    fm_lock_acquire_wait "$2/.fm-secondmate-parent.lock" || exit 1
+    : > "$3"
+    while [ ! -e "$4" ]; do sleep 0.05; done
+    printf "%s\n" "$5" > "$2/.fm-secondmate-parent"
+    fm_lock_release "$2/.fm-secondmate-parent.lock"
+  ' _ "$ROOT" "$MATE" "$1" "$2" "$3" &
+  HOLDER_PID=$!
+  local waited=0
+  while [ ! -e "$1" ]; do
+    waited=$((waited + 1))
+    [ "$waited" -le 200 ] || fail "test setup drifted: the binding lock was never taken"
+    sleep 0.05
+  done
+}
+
 # Both primaries list the same mate: the host primary as a plain local secondmate,
 # the remote primary as a remote route reached through the SSH alias remote-mac.
 printf -- '- ios - Own iOS delivery. (home: %s; scope: iOS work; projects: ; added 2026-09-27)\n' "$MATE" \
@@ -175,14 +209,15 @@ pass "re-seeding a home with a malformed binding refuses rather than rewriting i
 
 # Provisioning is the remote-side writer, so the remote primary re-seeding a mate
 # a host primary has claimed must refuse rather than silently take it back.
+provision_manifest() {
+  printf 'schema=fm-remote-home-provision.v1\n'
+  printf 'id_b64=%s\n' "$(printf 'ios' | base64)"
+  printf 'charter_b64=%s\n' "$(printf 'Reseed charter.\n' | base64 | tr -d '\n')"
+  printf 'parent_host_b64=%s\n' "$(printf 'remote-mac' | base64)"
+  printf 'project_count=0\n'
+}
 remote_reseed() {
-  {
-    printf 'schema=fm-remote-home-provision.v1\n'
-    printf 'id_b64=%s\n' "$(printf 'ios' | base64)"
-    printf 'charter_b64=%s\n' "$(printf 'Reseed charter.\n' | base64 | tr -d '\n')"
-    printf 'parent_host_b64=%s\n' "$(printf 'remote-mac' | base64)"
-    printf 'project_count=0\n'
-  } | FM_HOME="$MATE" FM_ROOT_OVERRIDE="$ROOT" "$ROOT/bin/fm-remote-home-provision.sh" 2>&1
+  provision_manifest | FM_HOME="$MATE" FM_ROOT_OVERRIDE="$ROOT" "$ROOT/bin/fm-remote-home-provision.sh" 2>&1
 }
 rm -f "$MATE/.fm-secondmate-parent-prior"
 takeover "$HOST_PRIMARY" claim ios >/dev/null || fail "the host primary could not claim the mate"
@@ -222,9 +257,11 @@ while [ ! -e "$CLAIM_HELD" ]; do
   [ "$waited" -le 200 ] || fail "test setup drifted: the concurrent claim never took the binding lock"
   sleep 0.05
 done
-remote_reseed > "$TMP_ROOT/racing-provision.out" 2>&1 &
+provision_manifest > "$TMP_ROOT/racing-provision.manifest"
+FM_HOME="$MATE" FM_ROOT_OVERRIDE="$ROOT" "$ROOT/bin/fm-remote-home-provision.sh" \
+  < "$TMP_ROOT/racing-provision.manifest" > "$TMP_ROOT/racing-provision.out" 2>&1 &
 PROVISION_PID=$!
-sleep 2
+wait_blocked_on_binding_lock "$PROVISION_PID" "provisioning"
 : > "$CLAIM_GO"
 wait "$CLAIMER_PID" || fail "the concurrent claim failed"
 wait "$PROVISION_PID" && RC=0 || RC=$?
@@ -236,6 +273,32 @@ binding_is "$HOST_RECORD" "provisioning must not overwrite a claim made while it
 prior_is "$REMOTE_RECORD" "provisioning must leave the concurrent claim's saved binding for restore"
 takeover "$HOST_PRIMARY" restore ios >/dev/null || fail "the host primary could not hand the mate back"
 pass "a claim made while provisioning runs is not overwritten by its write or its rollback"
+
+# The same holds for local re-seeding, whose final binding write must also wait for
+# the lock and look at the binding again: a claim made after its early check stays
+# in place, and the rollback of the failed seed must not put the older binding back.
+OTHER_RECORD=$(printf 'schema=fm-secondmate-parent.v1\nroute=local\nparent_home=%s\n' "$REMOTE_PRIMARY")
+cp "$MATE/.fm-secondmate-parent-prior" "$TMP_ROOT/prior-before-racing-reseed"
+write_binding "$HOST_RECORD"
+SEED_HELD="$TMP_ROOT/seed-claim-held"
+SEED_GO="$TMP_ROOT/seed-claim-go"
+hold_binding_lock_then_write "$SEED_HELD" "$SEED_GO" "$OTHER_RECORD"
+FM_HOME="$HOST_PRIMARY" FM_ROOT_OVERRIDE="$ROOT" FM_SECONDMATE_CHARTER='Reseed charter.' \
+  FM_SECONDMATE_SCOPE='reseed scope' \
+  "$ROOT/bin/fm-home-seed.sh" ios "$MATE" --no-projects > "$TMP_ROOT/racing-seed.out" 2>&1 &
+SEED_PID=$!
+wait_blocked_on_binding_lock "$SEED_PID" "re-seeding"
+: > "$SEED_GO"
+wait "$HOLDER_PID" || fail "the lock holder failed"
+wait "$SEED_PID" && RC=0 || RC=$?
+OUT=$(cat "$TMP_ROOT/racing-seed.out")
+[ "$RC" -ne 0 ] || fail "re-seeding must refuse once a concurrent claim has moved the binding: $OUT"
+assert_contains "$OUT" "seeding does not move a parent binding" \
+  "the late re-seed refusal must say seeding does not move a binding"
+binding_is "$OTHER_RECORD" "re-seeding must not overwrite or roll back a claim made while it was running"
+cp "$TMP_ROOT/prior-before-racing-reseed" "$MATE/.fm-secondmate-parent-prior"
+write_binding "$REMOTE_RECORD"
+pass "a claim made while re-seeding runs is not overwritten by its write or its rollback"
 
 # --- the displaced primary refuses to claim or steer --------------------------
 # The mate is bound to the remote route again, so the host primary is displaced.
@@ -257,6 +320,15 @@ assert_contains "$SEND_OUT" "currently bound to a parent that reaches it over th
 assert_contains "$SEND_OUT" "refusing to steer it in parallel" \
   "the steer refusal must say it is refusing rather than splitting supervision"
 pass "a displaced primary refuses to steer the secondmate and names the holder"
+
+# Addressing the mate by its recorded window resolves the same secondmate
+# metadata, so it must not be a way around the refusal.
+SEND_OUT=$(FM_HOME="$HOST_PRIMARY" FM_ROOT_OVERRIDE="$ROOT" \
+  "$ROOT/bin/fm-send.sh" firstmate:fm-ios 'status check' 2>&1) && SEND_RC=0 || SEND_RC=$?
+[ "$SEND_RC" -ne 0 ] || fail "a displaced primary must refuse to steer the mate by its recorded window: $SEND_OUT"
+assert_contains "$SEND_OUT" "refusing to steer it in parallel" \
+  "the window-addressed steer must be refused as split supervision"
+pass "a displaced primary cannot steer the secondmate by its recorded window either"
 
 # The same primary works normally once the binding names it again.
 takeover "$HOST_PRIMARY" claim ios >/dev/null || fail "the host primary could not reclaim the mate"
@@ -345,6 +417,29 @@ assert_contains "$OUT" "the displaced parent $HOST_PRIMARY was still waiting on 
 assert_contains "$OUT" "corr-abc123 phase=awaiting_report request=confirm the release branch is cut" \
   "a take-over must identify each unanswered expectation it strands"
 pass "a take-over names the replies the displaced parent was still waiting on"
+
+# The parent a claim displaces is the one the binding names when the claim takes
+# the lock, not the one it named when the command started: a claim that lands
+# while this one waits turns the earlier reading into a different parent's.
+write_binding "$REMOTE_RECORD"
+rm -f "$MATE/.fm-secondmate-parent-prior"
+HOLD_HELD="$TMP_ROOT/stale-claim-held"
+HOLD_GO="$TMP_ROOT/stale-claim-go"
+hold_binding_lock_then_write "$HOLD_HELD" "$HOLD_GO" "$HOST_RECORD"
+FM_HOME="$REMOTE_PRIMARY" FM_ROOT_OVERRIDE="$ROOT" "$ROOT/bin/fm-secondmate-takeover.sh" claim ios \
+  > "$TMP_ROOT/stale-claim.out" 2>&1 &
+STALE_CLAIM_PID=$!
+wait_blocked_on_binding_lock "$STALE_CLAIM_PID" "the claim"
+: > "$HOLD_GO"
+wait "$HOLDER_PID" || fail "the lock holder failed"
+wait "$STALE_CLAIM_PID" || fail "the waiting claim failed: $(cat "$TMP_ROOT/stale-claim.out")"
+OUT=$(cat "$TMP_ROOT/stale-claim.out")
+prior_is "$HOST_RECORD" "the waiting claim must preserve the binding it actually displaced"
+assert_contains "$OUT" "the displaced parent $HOST_PRIMARY was still waiting on these replies" \
+  "a claim must report the parent the binding named when it took the lock"
+assert_not_contains "$OUT" "over the remote route from another machine" \
+  "a claim must not report the parent the binding named before it waited for the lock"
+pass "a claim reports the parent it actually displaced, not the one it saw before waiting"
 
 # --- a taken-over home stays clean for the guarded pre-launch sync -------------
 # A secondmate home is a worktree of this repo, and the guarded fast-forward that
@@ -459,6 +554,20 @@ prior_is "$REMOTE_RECORD" "the remote restore must itself preserve the binding i
 assert_contains "$OUT" "takeover-restore: ios is now bound to its previous parent" \
   "the remote restore must report the handover"
 pass "the remote primary hands the mate back to its host parent in one command"
+
+# Restoring from the remote primary when the saved binding is its own gives it the
+# reply channel back, and the report must say so rather than that replies stop.
+assert_contains "$OUT" "this home no longer receives replies from ios" \
+  "a restore that hands the mate to the host parent must say the remote primary stops receiving replies"
+OUT=$(remote_takeover restore ios) || fail "the remote restore back to the remote parent failed: $OUT"
+binding_is "$REMOTE_RECORD" "the remote restore must reinstate the remote binding"
+assert_contains "$OUT" "mirrored into $REMOTE_PRIMARY/state/ios.status" \
+  "a restore that returns the mate to the remote primary must say its replies arrive here again"
+assert_not_contains "$OUT" "no longer receives replies" \
+  "a restore that returns the mate to the remote primary must not say it stops receiving replies"
+OUT=$(remote_takeover restore ios) || fail "the remote restore back to the host parent failed: $OUT"
+binding_is "$HOST_RECORD" "the remote restore must hand the mate back to the host parent again"
+pass "a restore that returns the mate to the remote primary reports its replies arriving again"
 
 # The mate is bound to the host primary, so the remote primary's own steer must be
 # refused on the mate's host rather than delivered in parallel.

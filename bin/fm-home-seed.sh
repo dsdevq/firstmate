@@ -538,6 +538,7 @@ SEED_SUB_REG_EXISTED=0
 SEED_CHARTER_EXISTED=0
 SEED_MARKER_EXISTED=0
 SEED_PARENT_MARKER_EXISTED=0
+SEED_PARENT_BINDING_WRITTEN=0
 
 restore_seed_file() {
   local existed=$1 backup=$2 path=$3
@@ -631,6 +632,28 @@ seed_project_was_created() {
   grep -Fx -- "$project_path" "$SEED_CREATED_PROJECTS_FILE" >/dev/null 2>&1
 }
 
+# Install the binding rendered for this seed, holding the binding lock and looking
+# at the live record once more: a primary that claimed the mate after the early
+# check keeps it, and the refusal is the one the early check gives.
+seed_install_parent_binding() { # <home>
+  local home=$1 live="$1/$SUB_HOME_PARENT_MARKER"
+  validate_existing_parent_binding "$home" || return 1
+  if ! cp -- "$SEED_BACKUP_DIR/parent-written" "$live.tmp.$$" \
+    || ! mv -f -- "$live.tmp.$$" "$live"; then
+    rm -f -- "$live.tmp.$$"
+    echo "error: could not install the durable parent binding for $home" >&2
+    return 1
+  fi
+  SEED_PARENT_BINDING_WRITTEN=1
+}
+
+# Undo this seed's binding write, but only while the live record is still the one
+# it wrote: a binding that changed since belongs to whoever changed it.
+seed_restore_parent_binding() {
+  cmp -s -- "$SEED_BACKUP_DIR/parent-written" "$SEED_HOME/$SUB_HOME_PARENT_MARKER" || return 0
+  restore_seed_file "$SEED_PARENT_MARKER_EXISTED" "$SEED_BACKUP_DIR/parent-marker" "$SEED_HOME/$SUB_HOME_PARENT_MARKER"
+}
+
 seed_rollback() {
   local project_path
   [ "${SEED_ROLLBACK_ACTIVE:-0}" = 1 ] || return 0
@@ -657,7 +680,9 @@ seed_rollback() {
       fi
       if [ -n "${SEED_BACKUP_DIR:-}" ] && [ "${SEED_HOME_BACKED_UP:-0}" = 1 ]; then
         restore_seed_file "$SEED_MARKER_EXISTED" "$SEED_BACKUP_DIR/marker" "$SEED_HOME/$SUB_HOME_MARKER"
-        restore_seed_file "$SEED_PARENT_MARKER_EXISTED" "$SEED_BACKUP_DIR/parent-marker" "$SEED_HOME/$SUB_HOME_PARENT_MARKER"
+        if [ "$SEED_PARENT_BINDING_WRITTEN" = 1 ]; then
+          fm_secondmate_parent_locked "$SEED_HOME" seed_restore_parent_binding || true
+        fi
         restore_seed_file "$SEED_CHARTER_EXISTED" "$SEED_BACKUP_DIR/charter.md" "$SEED_HOME/data/charter.md"
         restore_seed_file "$SEED_SUB_REG_EXISTED" "$SEED_BACKUP_DIR/sub-projects.md" "$SEED_HOME/data/projects.md"
       fi
@@ -964,11 +989,11 @@ seed_home() {
   # can still resolve the real parent instead of silently treating its relay
   # as inactive.
   fm_secondmate_parent_record_render local "$(resolved_path "$FM_HOME")" \
-    > "$home/$SUB_HOME_PARENT_MARKER.tmp.$$" || {
+    > "$SEED_BACKUP_DIR/parent-written" || {
     echo "error: could not render the durable parent binding for $home" >&2
     return 1
   }
-  mv -f -- "$home/$SUB_HOME_PARENT_MARKER.tmp.$$" "$home/$SUB_HOME_PARENT_MARKER"
+  fm_secondmate_parent_locked "$home" seed_install_parent_binding "$home" || return 1
   printf '%s\n' "$id" > "$home/$SUB_HOME_MARKER.tmp.$$"
   mv -f -- "$home/$SUB_HOME_MARKER.tmp.$$" "$home/$SUB_HOME_MARKER"
   write_registry "$id" "$home" "$projects_csv" "$SEED_PARENT_BRIEF"

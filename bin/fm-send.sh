@@ -561,10 +561,12 @@ fm_send_refuse_displaced_secondmate() { # <secondmate-id>
   fi
 }
 
-if [ -n "$TARGET_SELECTOR" ] && [ -n "$TARGET_META" ] && [ "$(fm_meta_get "$TARGET_META" kind)" = secondmate ]; then
-  MARK_FROM_FIRSTMATE=1
-  TARGET_TASK_ID=$(fm_send_id_from_meta "$TARGET_META")
-  fm_send_refuse_displaced_secondmate "$TARGET_TASK_ID"
+if [ -n "$TARGET_META" ] && [ "$(fm_meta_get "$TARGET_META" kind)" = secondmate ]; then
+  fm_send_refuse_displaced_secondmate "$(fm_send_id_from_meta "$TARGET_META")"
+  if [ -n "$TARGET_SELECTOR" ]; then
+    MARK_FROM_FIRSTMATE=1
+    TARGET_TASK_ID=$(fm_send_id_from_meta "$TARGET_META")
+  fi
 fi
 
 # Validate the answerer-closes request before any durable mutation or send: the

@@ -121,6 +121,19 @@ report_replies() { # <id> <displaced-route> <displaced-parent-home>
   fi
 }
 
+# Bind the mate to this home, noting the parent displaced. Run holding the binding
+# lock so the parent noted is the one the binding named when it was replaced, not
+# one a competing claim has since displaced; sets WAS_ROUTE and WAS_HOME.
+claim_locally() {
+  WAS_ROUTE=
+  WAS_HOME=
+  if fm_secondmate_parent_record_parse "$(fm_secondmate_parent_path "$ROUTE_HOME")"; then
+    WAS_ROUTE=$FM_SECONDMATE_PARENT_ROUTE
+    WAS_HOME=$FM_SECONDMATE_PARENT_HOME
+  fi
+  fm_secondmate_parent_rebind "$ROUTE_HOME" local "$(this_home)"
+}
+
 cmd_claim() { # <id>
   local id=$1 was_route was_home leg_out lines
   resolve_route "$id"
@@ -146,14 +159,9 @@ cmd_claim() { # <id>
     return 0
   fi
   require_local_home "$id"
-  was_route=
-  was_home=
-  if fm_secondmate_parent_record_parse "$(fm_secondmate_parent_path "$ROUTE_HOME")"; then
-    was_route=$FM_SECONDMATE_PARENT_ROUTE
-    was_home=$FM_SECONDMATE_PARENT_HOME
-  fi
-  fm_secondmate_parent_locked "$ROUTE_HOME" fm_secondmate_parent_rebind "$ROUTE_HOME" local "$(this_home)" \
-    || die "$FM_SECONDMATE_PARENT_ERROR"
+  fm_secondmate_parent_locked "$ROUTE_HOME" claim_locally || die "$FM_SECONDMATE_PARENT_ERROR"
+  was_route=$WAS_ROUTE
+  was_home=$WAS_HOME
   if [ "$FM_SECONDMATE_PARENT_DISPLACED" = 0 ] && [ -n "$was_route" ]; then
     printf 'takeover: %s is already bound to this home %s; nothing was displaced\n' "$id" "$(this_home)"
     was_route=
@@ -172,7 +180,12 @@ cmd_restore() { # <id>
     leg_out=$("$SCRIPT_DIR/fm-on.sh" "$id" fm-remote-secondmate-control.sh takeover-restore "$id" </dev/null) \
       || die "the restore did not complete on the secondmate's host; the reason is in the output above"
     printf '%s\n' "$leg_out"
-    printf 'this home no longer receives replies from %s; they land with the parent named above\n' "$id"
+    if printf '%s\n' "$leg_out" | grep -q '^route=remote$'; then
+      printf 'replies now land in the secondmate home'\''s state/parent-replies.status and are mirrored into %s/state/%s.status\n' \
+        "$(this_home)" "$id"
+    else
+      printf 'this home no longer receives replies from %s; they land with the parent named above\n' "$id"
+    fi
     return 0
   fi
   require_local_home "$id"
