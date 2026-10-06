@@ -874,8 +874,9 @@ hold_ask_line_from_file() {  # <path>
   bytes=$(LC_ALL=C wc -c < "$file" | tr -d ' ')
   case "$bytes" in ''|*[!0-9]*) fail "cannot size --ask-file: $file" ;; esac
   [ "$bytes" -le 8192 ] || fail "--ask-file exceeds 8192 bytes: $file"
-  ask=$(jq -c -e "$FM_HOLD_ASK_JQ_DEFS"'
-    if hold_ask_valid then hold_ask_normalize else error("invalid") end' "$file" 2>/dev/null) \
+  ask=$(jq -c -e -s "$FM_HOLD_ASK_JQ_DEFS"'
+    if length == 1 and (.[0] | hold_ask_valid) then .[0] | hold_ask_normalize
+    else error("invalid") end' "$file" 2>/dev/null) \
     || fail "--ask-file is not a valid captain-hold ask (see bin/fm-hold-ask-lib.sh): $file"
   printf 'Captain hold ask: %s' "$ask"
 }

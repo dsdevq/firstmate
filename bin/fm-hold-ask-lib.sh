@@ -22,9 +22,9 @@
 #                      at most 120 characters; at most one recommended
 #   free_text_allowed  boolean; an ask with no options must allow free text
 #   link               non-empty string of at most 500 characters, or null
-# No other key is accepted. `hold_ask_normalize` orders the recommended option
-# first and records an absent link as null. A stored line that does not parse
-# or validate reads back as no ask rather than a partial one.
+# No other key is accepted. `hold_ask_normalize` keeps options in the order the
+# hold author wrote them and records an absent link as null. A stored line that
+# does not parse or validate reads back as no ask rather than a partial one.
 #
 # Splice "$FM_HOLD_ASK_JQ_DEFS" ahead of a jq program.
 
@@ -52,11 +52,10 @@ FM_HOLD_ASK_JQ_DEFS='
     and ([.options[] | select(.recommended)] | length) <= 1
     and (.free_text_allowed | type) == "boolean"
     and ((.options | length) > 0 or .free_text_allowed)
-    and ((.link // null) == null or (.link | hold_ask_bounded_string(500)));
+    and (.link == null or (.link | hold_ask_bounded_string(500)));
   def hold_ask_normalize:
     {question,
-     options:([.options[] | select(.recommended)] + [.options[] | select(.recommended | not)]
-              | map({id,label,recommended})),
+     options:(.options | map({id,label,recommended})),
      free_text_allowed,
      link:(.link // null)};
   def hold_ask_from_lines:

@@ -1223,7 +1223,7 @@ EOF
     ([.decisions_open[] | select(.source == "backlog") | .id] | sort) == ["ask-hold","bad-ask-hold","plain-hold"]
     and ([.decisions_open[] | select(.id == "ask-hold")][0].ask
          == {question:"Which export format ships first?",
-             options:[{id:"json",label:"JSON",recommended:true},{id:"csv",label:"CSV",recommended:false}],
+             options:[{id:"csv",label:"CSV",recommended:false},{id:"json",label:"JSON",recommended:true}],
              free_text_allowed:true,link:"https://board.example/session/b1"})
     and ([.decisions_open[] | select(.id == "plain-hold")][0].ask == null)
     and ([.decisions_open[] | select(.id == "bad-ask-hold")][0].ask == null)

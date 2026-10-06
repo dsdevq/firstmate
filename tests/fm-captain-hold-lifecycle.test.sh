@@ -4652,7 +4652,7 @@ EOF
   printf '%s' "$snap" | jq -e '
     ([.decisions_open[] | select(.id == "sample-format")][0].ask
       == {question:"Ship CSV or JSON first?",
-          options:[{id:"json",label:"JSON (fast)",recommended:true},{id:"csv",label:"CSV",recommended:false}],
+          options:[{id:"csv",label:"CSV",recommended:false},{id:"json",label:"JSON (fast)",recommended:true}],
           free_text_allowed:false,link:null})
     and .counts.asks == 1
   ' >/dev/null || fail "the stored ask did not reach the summary normalized: $snap"
@@ -4667,6 +4667,9 @@ EOF
     '{"question":"Two picks?","options":[{"id":"a","label":"A","recommended":true},{"id":"b","label":"B","recommended":true}],"free_text_allowed":false}' \
     '{"question":"No way to answer?","options":[],"free_text_allowed":false}' \
     '{"question":"Extra key?","options":[],"free_text_allowed":true,"board":"x"}' \
+    '{"question":"Boolean link?","options":[],"free_text_allowed":true,"link":false}' \
+    '{"question":"First of two?","options":[],"free_text_allowed":true}
+{"question":"Second of two?","options":[],"free_text_allowed":true}' \
     'not json'; do
     printf '%s\n' "$bad" > "$home/bad-ask.json"
     if run_captain "$home" hold sample-bad --title "Bad ask" --repo sample \
