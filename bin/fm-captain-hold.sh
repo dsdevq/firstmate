@@ -745,10 +745,21 @@ captain_markdown_archive_path() {  # <root> <data-dir>; prints the resolved arch
   local root=$1 data=$2 configured
   configured=$(LC_ALL=C awk '
     function trim(v) { sub(/^[[:space:]]+/, "", v); sub(/[[:space:]]+$/, "", v); return v }
+    # A "#" inside a quoted value belongs to the value; only an unquoted one
+    # starts a comment.
+    function strip_comment(s,   i, c, q) {
+      q = ""
+      for (i = 1; i <= length(s); i++) {
+        c = substr(s, i, 1)
+        if (q != "") { if (c == q) q = "" }
+        else if (c == "\"" || c == sprintf("%c", 39)) q = c
+        else if (c == "#") return substr(s, 1, i - 1)
+      }
+      return s
+    }
     BEGIN { insection = 0 }
     {
-      line = $0
-      sub(/[[:space:]]*#.*/, "", line)
+      line = strip_comment($0)
       line = trim(line)
       if (line ~ /^\[[^]]+\]$/) { insection = (line == "[markdown]"); next }
       if (!insection) next

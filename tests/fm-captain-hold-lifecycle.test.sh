@@ -765,6 +765,46 @@ test_archived_answer_keeps_its_recorded_origin_binding() {
   pass "an archived captain answer keeps its recorded origin binding"
 }
 
+test_verify_resolves_an_archived_answer_under_a_quoted_archive_path_containing_hash() {
+  local home scout out
+  home=$(make_home archived-hash-path)
+  perl -pi -e 's|^archive = .*|archive = "data/answered#2026.md"  # trailing comment|' "$home/.tasks.toml"
+  scout=sample-archived-hash-scout
+  mkdir -p "$home/data/$scout"
+  fm_write_meta "$home/state/$scout.meta" \
+    "window=firstmate:fm-$scout" \
+    "worktree=$home/projects/missing-$scout" \
+    "project=$home/projects/sample" \
+    "harness=codex" \
+    "kind=scout" \
+    "spawn_gen=fixture-$scout" \
+    "decisions_reviewed=1" \
+    "decision_keys=sample-archived-hash-call"
+  printf 'done: report complete\n' > "$home/state/$scout.status"
+  printf '# Report\n\nThe investigation finished.\n' > "$home/data/$scout/report.md"
+
+  run_captain "$home" hold sample-archived-hash-call \
+    --title "Choose the hash option" --reason "captain choice pending" --repo sample >/dev/null \
+    || fail "could not register the captain-held task"
+  printf 'Captain chose the hash option.\n' > "$home/hash-decision.txt"
+  run_captain "$home" answer sample-archived-hash-call --decision-file "$home/hash-decision.txt" >/dev/null \
+    || fail "answer could not close the captain-held task"
+  tasks_in "$home" prune --keep 0 --state 'done' >/dev/null \
+    || fail "could not rotate the answered row into the archive"
+  assert_no_grep "sample-archived-hash-call" "$home/data/backlog.md" \
+    "the answered row was not rotated out of the live backlog"
+  assert_grep "sample-archived-hash-call" "$home/data/answered#2026.md" \
+    "the answered row did not land in the configured archive containing a hash"
+
+  run_captain "$home" verify "$scout" >/dev/null \
+    || fail "verify did not resolve an answer archived under a quoted path containing a hash"
+  out=$(run_captain "$home" complete "$scout" --none) \
+    || fail "the completion gate refused an answer archived under a quoted path containing a hash"
+  assert_contains "$out" "sample-archived-hash-call" \
+    "completion dropped the entry archived under a quoted path containing a hash"
+  pass "verify and complete resolve an archived answer under a quoted archive path containing a hash"
+}
+
 test_archived_row_without_a_recorded_answer_still_fails_resolution() {
   local home scout out status
   home=$(make_home archived-unanswered)
@@ -4850,5 +4890,6 @@ test_captain_hold_mutations_address_the_beads_backend
 test_verify_resolves_an_answer_rotated_into_the_markdown_archive
 test_verify_resolves_a_legacy_answer_rotated_into_the_markdown_archive
 test_archived_answer_keeps_its_recorded_origin_binding
+test_verify_resolves_an_archived_answer_under_a_quoted_archive_path_containing_hash
 test_archived_row_without_a_recorded_answer_still_fails_resolution
 test_hold_creates_a_captain_row_when_beads_requires_due_without_custom_type
