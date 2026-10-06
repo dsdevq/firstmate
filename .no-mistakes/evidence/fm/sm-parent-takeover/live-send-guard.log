@@ -1,0 +1,24 @@
+## fm-send by displaced primary
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.tYhLPR
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  WATCHER DOWN - SUPERVISION IS OFF
+●  1 task(s) in flight, but no watcher has a fresh beacon (last beat: never, grace 300s).
+●  Trust the emitted supervision protocol for this harness; do not use shell & for watcher repair.
+●  This is a supervision warning only; the requested message WILL still be sent.
+[rc=141]
+## fm-spawn --secondmate by displaced primary
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.tYhLPR
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+error: secondmate home /tmp/mate.3BINDC is currently bound to a parent that reaches it over the remote route, not to this home; refusing to claim it in parallel. Take it over with bin/fm-secondmate-takeover.sh claim ios, or leave it with the parent named above
+[rc=1]
+## claim, then send
+takeover: ios is now bound to this home /tmp/fm-lab.tYhLPR
+displaced parent, preserved for restore: a firstmate reaching it over the remote route (host alias remote-mac)
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.tYhLPR
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+fm-send: doorbell not typed because the agent in firstmate:fm-ios has exited; the steer is durably recorded at /tmp/fm-lab.tYhLPR/state/ios.inbox/001.msg for recovery (stuck-crewmate-recovery), and the watcher will not re-ring a dead pane
+[rc=0]
+## fm-send by displaced primary
+[rc=1]
+error: secondmate home /tmp/mate.RkHXoB is currently bound to a parent that reaches it over the remote route, not to this home; refusing to steer it in parallel. Take it over with bin/fm-secondmate-takeover.sh claim ios, or send to the parent named above
+ls: cannot access '/tmp/fm-lab.OO2X3l/state/ios.inbox': No such file or directory

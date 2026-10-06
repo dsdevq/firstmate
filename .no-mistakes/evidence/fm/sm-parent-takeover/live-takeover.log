@@ -1,0 +1,54 @@
+## show (host primary, remote binding)
+current parent: a firstmate reaching it over the remote route (host alias remote-mac)
+displaced parent, preserved for restore: none recorded, or unreadable
+[rc=0]
+## host primary steers while bound remote -> should refuse
+error: no-mistakes gate agent must not drive the fleet (NO_MISTAKES_GATE set)
+[rc=3]
+## claim
+takeover: ios is now bound to this home /tmp/tk.ElBPTf/hostp
+displaced parent, preserved for restore: a firstmate reaching it over the remote route (host alias remote-mac)
+replies now land in /tmp/tk.ElBPTf/hostp/state/ios.status
+the displaced parent reached this secondmate over the remote route from another machine: any reply it is still waiting on will arrive here instead, and its own records cannot be read from this home
+[rc=0]
+schema=fm-secondmate-parent.v1
+route=local
+parent_home=/tmp/tk.ElBPTf/hostp
+-- prior
+schema=fm-secondmate-parent.v1
+route=remote
+parent_host=remote-mac
+## repeat claim
+takeover: ios is already bound to this home /tmp/tk.ElBPTf/hostp; nothing was displaced
+replies now land in /tmp/tk.ElBPTf/hostp/state/ios.status
+no previous parent was displaced by this take-over
+[rc=0]
+-- prior
+schema=fm-secondmate-parent.v1
+route=remote
+parent_host=remote-mac
+## restore
+takeover-restore: ios is now bound to its previous parent
+current parent: a firstmate reaching it over the remote route (host alias remote-mac)
+displaced parent, preserved for restore: a firstmate home on this secondmate's own host, /tmp/tk.ElBPTf/hostp
+this home no longer receives replies from ios; they land with the parent named above
+[rc=0]
+schema=fm-secondmate-parent.v1
+route=remote
+parent_host=remote-mac
+## restore again (host's own expectations; swap back)
+takeover-restore: ios is now bound to its previous parent
+current parent: a firstmate home on this secondmate's own host, /tmp/tk.ElBPTf/hostp
+displaced parent, preserved for restore: a firstmate reaching it over the remote route (host alias remote-mac)
+this home no longer receives replies from ios; they land with the parent named above
+[rc=0]
+schema=fm-secondmate-parent.v1
+route=local
+parent_home=/tmp/tk.ElBPTf/hostp
+## malformed binding fails closed
+error: the live parent binding is unsafe or malformed: /tmp/tk.ElBPTf/mate/.fm-secondmate-parent
+[rc=1]
+junk
+## unknown id
+error: this home's secondmate registry has no single usable record for nope
+[rc=1]
