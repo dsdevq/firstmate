@@ -25,6 +25,7 @@ ok - persistent stale escalates after threshold and clears its marker
 ok - resumed (busy) stale clears its marker without escalating
 ok - housekeeping re-surfaces a stale declared pause on the long cadence and resets its window
 ok - housekeeping re-surfaces a forgotten captain hold on the long cadence and resets its window
+ok - housekeeping silences a captain hold only under an away record, never under quiet mode's
 ok - a busy pane cannot gate the pause clear once its crew's status no longer declares the wait
 ok - housekeeping matures a busy pane's declared-wait window into exactly one recheck per window
 ok - housekeeping bounds a distant declared time, defers to a near one, and rechecks a passed one at once
@@ -74,6 +75,13 @@ ok - an unverifiable status identity surfaces without advancing markers
 ok - a status read failure surfaces without advancing the daemon suppressor
 ok - catch-all routine scans advance before later actionable appends
 ok - failed escalation writes retain durable wakes and classification positions
+ok - stuck inbox escalation reaches supervision in away mode and survives buffering failure
+ok - stuck inbox escalation reaches supervision in quiet mode and survives buffering failure
+ok - write inbox escalation reaches supervision in away mode and survives buffering failure
+ok - write inbox escalation reaches supervision in quiet mode and survives buffering failure
+ok - reset inbox escalation reaches supervision in away mode and survives buffering failure
+ok - reset inbox escalation reaches supervision in quiet mode and survives buffering failure
+ok - inbox dispatch preserves ordinary stale, busy-turn, and other doorbell routing
 ok - catch-all markers advance only after escalation buffering succeeds
 ok - classification failure retains the complete durable wake batch
 ok - missing-status stale wakes remain ordinary and acknowledgeable
@@ -95,6 +103,7 @@ ok - max-defer on a dead-shell pane fails the away window terminally: durable re
 ok - max-defer on a live agent with an unknown composer keeps the repeating wedge, not a failed window
 ok - a live agent pane classifies alive whatever its window is named
 ok - a vanished captain pane fails the away window durably even when no active alert channel is configured
+ok - the terminal-failure marker is published complete or not at all, and a failed write retries with one alert
 ok - normal flush clears a stale wedge marker
 ok - an oversized buffered digest is delivered bounded, with the full text kept durable
 ok - a digest past its byte budget counts the omitted events and keeps them in the full text
@@ -120,7 +129,6 @@ ok - a failing channel logs and falls back to the next channel, never crashing t
 ok - a hung notifier is bounded, logged, and falls through to the next channel
 ok - a backgrounded command notifier remains bounded until its process group is reaped
 ok - a hung notifier override is bounded, logged, and proceeds to the next channel
-[1]+  Terminated              sh -c 'sleep 30 & printf "%s" "$!" > "$1"; wait' sh "$child_file"
 ok - daemon shutdown stops and reaps the active notifier process group
 ok - inject_wedge_alarm writes the marker AND emits the active alert even with no tmux status-line (herdr backend)
 ok - in-process wedge throttle prevents alert spam when the marker cannot persist
@@ -139,3 +147,7 @@ ok - inject_msg: herdr pane-gone check defers before any busy/composer/submit ca
 ok - inject_msg: dispatches busy-guard/composer-guard/submit through the herdr backend and succeeds on a confirmed empty composer
 ok - inject_msg: defers on a dead-shell/unreadable composer (unknown), never typing the escalation into a shell
 ok - inject_msg: unrecognized composer states defer by default
+
+real	2m7.029s
+user	0m30.795s
+sys	1m16.765s

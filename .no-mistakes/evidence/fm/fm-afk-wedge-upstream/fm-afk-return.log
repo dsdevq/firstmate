@@ -24,4 +24,15 @@ ok - the read-only guard treats the away-posture record as active away mode with
 ok - the return brief leads with supervisor health and names every detected gap
 ok - the return brief leads with a failed away window instead of reporting a quiet success
 ok - the return brief does not report an already-acked watcher-down marker as an open gap
+ok - the return brief reports a wake mid-handling at return as information, and only an open downtime episode as a gap
+ok - the return brief's failures section names an engine latch inside the away window with its time, error count, and cooldown state
+ok - a lost second trip append does not attach the current pause to a recovered episode
+ok - a recovered row preceding the stale retry time does not invent a second trip
+ok - a later failed probe does not change the trip-row error count
+ok - the return brief excludes prior-session latch rows
+ok - the return brief retains in-window trips and failed turns across a main restart
 ok - a return with only the legacy away flag still renders the brief and measures the window from the flag
+
+real	3m3.700s
+user	1m8.089s
+sys	1m58.174s
