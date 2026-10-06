@@ -28,7 +28,7 @@
 #
 # Splice "$FM_HOLD_ASK_JQ_DEFS" ahead of a jq program.
 
-# shellcheck disable=SC2034 # Output global, read by the sourcing caller.
+# shellcheck disable=SC2016,SC2034 # jq program: $vars must stay literal; output global, read by the sourcing caller.
 FM_HOLD_ASK_JQ_DEFS='
   def hold_ask_prefix: "Captain hold ask: ";
   def hold_ask_bounded_string($max):
