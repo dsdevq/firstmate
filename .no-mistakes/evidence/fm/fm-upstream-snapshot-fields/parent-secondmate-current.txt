@@ -1,0 +1,157 @@
+{
+  "id": "mate-alpha",
+  "home": "/tmp/fm-e2e-snapshot.TSTOnX",
+  "registered": true,
+  "current": {
+    "state": "captain_decision",
+    "reason": null
+  },
+  "provenance": {
+    "selected": "structured-home",
+    "structured_home": "/tmp/fm-e2e-snapshot.TSTOnX",
+    "summary_source": "local-ledger",
+    "summary_valid": true,
+    "trust": "complete",
+    "parent_event_role": "historical-only"
+  },
+  "freshness": {
+    "status": "fresh",
+    "observed_at": "2026-10-06T18:21:01Z",
+    "age_seconds": 75
+  },
+  "counts": {
+    "active_children": 3,
+    "decisions_open": 2,
+    "asks": 1,
+    "holds": 7,
+    "queued": 6,
+    "landed": 3,
+    "endpoints": 4
+  },
+  "decisions_open": [
+    {
+      "id": "export-format",
+      "hold_bucket": "live",
+      "ask": {
+        "question": "Which export format ships first?",
+        "options": [
+          "csv",
+          "json"
+        ],
+        "free_text_allowed": true,
+        "link": "https://github.com/o/alpha/issues/12"
+      }
+    },
+    {
+      "id": "rate-limits",
+      "hold_bucket": "live",
+      "ask": null
+    }
+  ],
+  "active_children": [
+    {
+      "id": "ship-export",
+      "title_plain": "Export widget for the dashboard page",
+      "produces": "pr",
+      "open_url": "https://github.com/o/alpha/issues/12",
+      "since_epoch": 1790000000
+    },
+    {
+      "id": "scout-upload",
+      "title_plain": "investigate the flaky upload path",
+      "produces": "report",
+      "open_url": null,
+      "since_epoch": 1790899200
+    },
+    {
+      "id": "local-landing",
+      "title_plain": "Local landing for alpha/beta",
+      "produces": "landing",
+      "open_url": "https://github.com/o/alpha/pull/44",
+      "since_epoch": 1790985600
+    }
+  ],
+  "landed": [
+    {
+      "id": "done-pr",
+      "project": "alpha",
+      "title_plain": "Speed up the lint lane",
+      "open_url": "https://github.com/o/alpha/pull/7"
+    },
+    {
+      "id": "done-issue",
+      "project": "beta",
+      "title_plain": "Close the audit gap",
+      "open_url": "https://github.com/o/alpha/issues/3"
+    },
+    {
+      "id": "done-scout",
+      "project": "alpha",
+      "title_plain": "Scout the cache",
+      "open_url": null
+    }
+  ],
+  "holds": [
+    {
+      "id": "after-widget",
+      "title_plain": "Follow-up after the widget",
+      "restart": {
+        "kind": "after_work",
+        "blocker_ids": [
+          "ship-export"
+        ],
+        "text": null
+      }
+    },
+    {
+      "id": "vendor-reply",
+      "title_plain": "Vendor reply needed",
+      "restart": {
+        "kind": "event",
+        "text": "vendor replies"
+      }
+    },
+    {
+      "id": "parked-idea",
+      "title_plain": "Parked idea for later",
+      "restart": {
+        "kind": null,
+        "text": "later maybe"
+      }
+    },
+    {
+      "id": "export-format",
+      "title_plain": "Choose the export format",
+      "restart": {
+        "kind": "captain_word",
+        "text": "captain picks the format"
+      }
+    },
+    {
+      "id": "rate-limits",
+      "title_plain": "Rate limit policy for alpha",
+      "restart": {
+        "kind": null,
+        "text": "parked until the vendor publishes quotas"
+      }
+    },
+    {
+      "id": "revisit-cache",
+      "title_plain": "Revisit the cache sizing",
+      "restart": {
+        "kind": "date",
+        "until": "2026-12-01",
+        "text": "revisit later"
+      }
+    },
+    {
+      "id": "paused-vendor",
+      "title_plain": "Wait for the vendor window",
+      "restart": {
+        "kind": "event",
+        "text": "waiting for the vendor window"
+      }
+    }
+  ],
+  "omitted": []
+}

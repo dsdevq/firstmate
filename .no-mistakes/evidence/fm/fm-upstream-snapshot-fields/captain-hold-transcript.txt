@@ -1,0 +1,44 @@
+$ cat ask.json
+{"question":"Which export format ships first?","options":[{"id":"csv","label":"CSV","recommended":false},{"id":"json","label":"JSON (fast path)","recommended":true}],"free_text_allowed":true,"link":"https://github.com/o/alpha/issues/12"}
+
+$ fm-captain-hold.sh hold export-format --title "Choose the export format" --repo alpha --reason "captain picks the format" --ask-file ask.json
+export-format
+exit=0
+
+$ fm-captain-hold.sh hold rate-limits --title "Rate limit policy for alpha" --repo alpha --reason "parked until the vendor publishes quotas"
+rate-limits
+exit=0
+
+$ fm-captain-hold.sh hold revisit-cache --title "Revisit the cache sizing" --repo alpha --reason "revisit later" --until 2026-12-01
+revisit-cache
+exit=0
+
+$ printf "{\"question\":\"x\",\"options\":[],\"free_text_allowed\":true,\"link\":false}" > bad-ask.json; fm-captain-hold.sh hold bad-hold --title "Bad ask" --repo alpha --reason "bad" --ask-file bad-ask.json
+fm-captain-hold: --ask-file is not a valid captain-hold ask (see bin/fm-hold-ask-lib.sh): /tmp/fm-e2e-snapshot.TSTOnX/bad-ask.json
+exit=1
+
+$ tasks-axi show export-format --full
+task:
+  id: export-format
+  title: Choose the export format
+  state: queued
+  blocked: no
+  blocked_by: none
+  held: yes
+  hold_reason: "fm-hold-v1:Y2FwdGFpbiBwaWNrcyB0aGUgZm9ybWF0"
+  hold_kind: captain
+  hold_until: "-"
+  kind: captain
+  repo: alpha
+  priority: "-"
+  created: 2026-10-06
+  closed: "-"
+  deps: none
+  links: none
+  body: "Captain hold set: 2026-10-06T18:18:24Z\nCaptain hold ask: {\"question\":\"Which export format ships first?\",\"options\":[{\"id\":\"csv\",\"label\":\"CSV\",\"recommended\":false},{\"id\":\"json\",\"label\":\"JSON (fast path)\",\"recommended\":true}],\"free_text_allowed\":true,\"link\":\"https://github.com/o/alpha/issues/12\"}"
+
+$ tasks-axi show bad-hold
+error: "Task \"bad-hold\" not found in this backlog"
+code: NOT_FOUND
+help[1]: Run `tasks-axi list` to see existing tasks
+exit=1

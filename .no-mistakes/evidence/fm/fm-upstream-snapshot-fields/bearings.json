@@ -1,0 +1,169 @@
+{
+  "schema": "fm-bearings.v1",
+  "home": "tmp/fm-e2e-snapshot.TSTOnX",
+  "generated": "2026-10-06T18:20:19Z",
+  "prs": "not_requested (run: /bearings include PRs)",
+  "contributions": {
+    "scope": "owned contributions per home",
+    "known": 4,
+    "checked": 0,
+    "counts": {
+      "captain": 0,
+      "fleet": 4,
+      "maintainer": 0,
+      "nobody": 0
+    },
+    "complete": false,
+    "proven_clear": false,
+    "unmeasured_homes": 0,
+    "unreadable_records": 0,
+    "unmeasured": 0,
+    "stale_verdicts": 0,
+    "missing_verdicts": 0,
+    "captain_omitted": 0,
+    "captain": []
+  },
+  "in_flight": [
+    {
+      "id": "local-landing",
+      "kind": "ship",
+      "state": "working",
+      "repo": "alpha",
+      "name": "fix: Local landing for alpha/beta",
+      "doing": "harness busy (claude-hook)"
+    },
+    {
+      "id": "paused-vendor",
+      "kind": "ship",
+      "state": "paused",
+      "repo": "alpha",
+      "name": "Wait for the vendor window",
+      "doing": "waiting for the vendor window"
+    },
+    {
+      "id": "scout-upload",
+      "kind": "scout",
+      "state": "working",
+      "repo": "alpha",
+      "name": "SCOUT alpha: investigate the flaky upload path",
+      "doing": "harness busy (claude-hook)"
+    },
+    {
+      "id": "ship-export",
+      "kind": "ship",
+      "state": "working",
+      "repo": "alpha",
+      "name": "feat(api): ship-export Export widget for the dashboard page",
+      "doing": "harness busy (claude-hook)"
+    }
+  ],
+  "secondmates": [],
+  "secondmate_reconcile": [],
+  "decisions_open": [
+    {
+      "id": "export-format",
+      "key": "export-format",
+      "verb": "captain-hold",
+      "summary": "Choose the export format: captain picks the format",
+      "owner": "(main)"
+    },
+    {
+      "id": "rate-limits",
+      "key": "rate-limits",
+      "verb": "captain-hold",
+      "summary": "Rate limit policy for alpha: parked until the vendor publishes quotas",
+      "owner": "(main)"
+    }
+  ],
+  "landed": [
+    {
+      "id": "done-pr",
+      "what": "chore(ci): done-pr Speed up the lint lane",
+      "artifact": "https://github.com/o/alpha/pull/7",
+      "owner": "(main)"
+    },
+    {
+      "id": "done-issue",
+      "what": "Close the audit gap",
+      "artifact": "-",
+      "owner": "(main)"
+    },
+    {
+      "id": "done-scout",
+      "what": "Scout the cache",
+      "artifact": "data/done-scout/report.md",
+      "owner": "(main)"
+    }
+  ],
+  "gates": [
+    {
+      "id": "revisit-cache",
+      "title": "Revisit the cache sizing",
+      "blocked_by": "-",
+      "reason": "until 2026-12-01: revisit later",
+      "owner": "(main)",
+      "filed": "2026-10-06"
+    },
+    {
+      "id": "after-widget",
+      "title": "Follow-up after the widget",
+      "blocked_by": "ship-export",
+      "reason": "-",
+      "owner": "(main)",
+      "filed": null
+    },
+    {
+      "id": "vendor-reply",
+      "title": "Vendor reply needed",
+      "blocked_by": "-",
+      "reason": "vendor replies",
+      "owner": "(main)",
+      "filed": null
+    },
+    {
+      "id": "parked-idea",
+      "title": "Parked idea for later",
+      "blocked_by": "-",
+      "reason": "later maybe",
+      "owner": "(main)",
+      "filed": null
+    }
+  ],
+  "reports": [],
+  "recorded_prs": [
+    {
+      "id": "local-landing",
+      "url": "https://github.com/o/alpha/pull/44"
+    }
+  ],
+  "omitted": [
+    {
+      "surface": "backlog item bodies",
+      "reveal": "--fields bodies"
+    },
+    {
+      "surface": "task paths",
+      "reveal": "--fields paths"
+    },
+    {
+      "surface": "watch/steer actions",
+      "reveal": "--fields actions"
+    },
+    {
+      "surface": "healthy endpoint detail",
+      "reveal": "--fields endpoints"
+    },
+    {
+      "surface": "full scout-report inventory",
+      "reveal": "--all-reports"
+    },
+    {
+      "surface": "captain holds bucketed blocked, dated, or aged: 1",
+      "reveal": "--all-decisions"
+    },
+    {
+      "surface": "live PR discovery + checks",
+      "reveal": "--include-prs"
+    }
+  ]
+}

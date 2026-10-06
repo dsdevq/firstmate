@@ -1,0 +1,833 @@
+{
+  "schema": "fm-fleet-snapshot.v2",
+  "generated": "2026-10-06T18:22:16Z",
+  "fm_home": "/tmp/fm-e2e-parent.1Hwi78",
+  "roots": {
+    "fm_root": "/home/dsdevqq/.no-mistakes/worktrees/143d8a14096c/01M495N7XC688H149PFJ0DBWRV",
+    "state": "/tmp/fm-e2e-parent.1Hwi78/state",
+    "data": "/tmp/fm-e2e-parent.1Hwi78/data",
+    "config": "/tmp/fm-e2e-parent.1Hwi78/config",
+    "projects": "/tmp/fm-e2e-parent.1Hwi78/projects"
+  },
+  "backlog": {
+    "records": [
+      {
+        "current_role": "worker",
+        "repo": "alpha",
+        "title": "Secondmate for alpha",
+        "local_note": null,
+        "body_lines": [],
+        "pr_url": null,
+        "hold_bucket": null,
+        "priority": null,
+        "id": "mate-alpha",
+        "unresolved_blocker_ids": [],
+        "requires_child_metadata": true,
+        "done": null,
+        "since": "2026-10-01",
+        "ask": null,
+        "report_path": null,
+        "order": 1,
+        "completion": {
+          "date": null,
+          "verb": null
+        },
+        "checked": false,
+        "hold_age_days": 5,
+        "hold_kind": null,
+        "reported": null,
+        "state": "in_flight",
+        "blocked_by_ids": [],
+        "hold_reason": null,
+        "blocked_by": null,
+        "blocked_reason": null,
+        "structured": true,
+        "captain_actionable": false,
+        "kind": "secondmate",
+        "links": [],
+        "hold_until": null,
+        "body_excerpt": null,
+        "hold_set": null,
+        "merged": null,
+        "raw": "- [ ] mate-alpha - Secondmate for alpha (repo: alpha) (kind: secondmate) (since 2026-10-01)"
+      }
+    ],
+    "path": "/tmp/fm-e2e-parent.1Hwi78/data/backlog.md",
+    "present": true
+  },
+  "tasks": [
+    {
+      "id": "mate-alpha",
+      "kind": "secondmate",
+      "harness": "claude",
+      "mode": "secondmate",
+      "yolo": "off",
+      "branch": null,
+      "project": "/tmp/fm-e2e-snapshot.TSTOnX",
+      "spawn_gen": null,
+      "backend": "tmux",
+      "remote": null,
+      "paths": {
+        "meta": {
+          "path": "/tmp/fm-e2e-parent.1Hwi78/state/mate-alpha.meta",
+          "present": true
+        },
+        "status_log": {
+          "path": "/tmp/fm-e2e-parent.1Hwi78/state/mate-alpha.status",
+          "present": true,
+          "kind": "event_history",
+          "last_event": {
+            "state": "working",
+            "note": "watching delegated scope",
+            "raw": "working: watching delegated scope",
+            "age_seconds": null
+          }
+        },
+        "worktree": {
+          "path": "/tmp/fm-e2e-snapshot.TSTOnX",
+          "present": true
+        },
+        "home": {
+          "path": "/tmp/fm-e2e-snapshot.TSTOnX",
+          "present": true
+        },
+        "report": {
+          "path": "/tmp/fm-e2e-parent.1Hwi78/data/mate-alpha/report.md",
+          "present": false
+        }
+      },
+      "secondmate_projects": [
+        "alpha"
+      ],
+      "current_state": {
+        "state": "working",
+        "source": "status-log",
+        "detail": "watching delegated scope",
+        "raw": "state: working · source: status-log · watching delegated scope",
+        "observed_at": "2026-10-06T18:22:16Z",
+        "freshness": "fresh"
+      },
+      "endpoint": {
+        "target": "firstmate:fm-mate-alpha",
+        "exists": true,
+        "agent_alive": "alive",
+        "status": "alive",
+        "observed_at": "2026-10-06T18:22:16Z",
+        "freshness": "fresh"
+      },
+      "pr": {
+        "url": null,
+        "source": "absent",
+        "head": null
+      },
+      "hints": {
+        "pending_decision": false,
+        "blocked_event": false,
+        "open_decisions": [],
+        "scout_report_present": false,
+        "last_event_text": "working: watching delegated scope"
+      },
+      "actions": {
+        "send": "bin/fm-send.sh fm-mate-alpha '<request>'",
+        "watch": "read status/doc return channel; do not routinely fm-peek a secondmate for answers",
+        "return_channel_note": "Secondmate answers come back through status/doc paths after a marked fm-send request."
+      },
+      "backlog": {
+        "current_role": "worker",
+        "repo": "alpha",
+        "title": "Secondmate for alpha",
+        "local_note": null,
+        "body_lines": [],
+        "pr_url": null,
+        "hold_bucket": null,
+        "priority": null,
+        "id": "mate-alpha",
+        "unresolved_blocker_ids": [],
+        "requires_child_metadata": true,
+        "done": null,
+        "since": "2026-10-01",
+        "ask": null,
+        "report_path": null,
+        "order": 1,
+        "completion": {
+          "date": null,
+          "verb": null
+        },
+        "checked": false,
+        "hold_age_days": 5,
+        "hold_kind": null,
+        "reported": null,
+        "state": "in_flight",
+        "blocked_by_ids": [],
+        "hold_reason": null,
+        "blocked_by": null,
+        "blocked_reason": null,
+        "structured": true,
+        "captain_actionable": false,
+        "kind": "secondmate",
+        "links": [],
+        "hold_until": null,
+        "body_excerpt": null,
+        "hold_set": null,
+        "merged": null,
+        "raw": "- [ ] mate-alpha - Secondmate for alpha (repo: alpha) (kind: secondmate) (since 2026-10-01)"
+      }
+    }
+  ],
+  "main_inventory": {
+    "valid": true,
+    "reason": null,
+    "orphan_in_flight": [],
+    "unstructured_current_count": 0
+  },
+  "contributions": {
+    "known": 0,
+    "checked": 0,
+    "counts": {
+      "captain": 0,
+      "fleet": 0,
+      "maintainer": 0,
+      "nobody": 0
+    },
+    "unmeasured": 0,
+    "complete": true,
+    "proven_clear": true,
+    "stale_verdicts": 0,
+    "missing_verdicts": 0,
+    "unreadable_records": 0,
+    "valid_until": 900,
+    "captain": [],
+    "captain_omitted": 0
+  },
+  "scout_reports": [],
+  "secondmate_current": {
+    "registry": {
+      "present": true,
+      "available": true,
+      "reason": null,
+      "provenance": "registered-table",
+      "path": "/tmp/fm-e2e-parent.1Hwi78/data/secondmates.md",
+      "freshness": {
+        "status": "fresh",
+        "observed_at": "2026-10-06T18:22:16Z"
+      },
+      "records": [
+        {
+          "id": "mate-alpha",
+          "home": "/tmp/fm-e2e-snapshot.TSTOnX",
+          "host": null,
+          "root": null,
+          "remote": false,
+          "registered": true,
+          "registry_error": null
+        }
+      ],
+      "input_truncated": false,
+      "records_truncated": false,
+      "complete": true,
+      "reasons": [],
+      "lines_in_window": 1,
+      "records_in_window": 1
+    },
+    "records": [
+      {
+        "id": "mate-alpha",
+        "home": "/tmp/fm-e2e-snapshot.TSTOnX",
+        "host": null,
+        "remote": false,
+        "registered": true,
+        "spawn_gen": null,
+        "current": {
+          "state": "captain_decision",
+          "reason": null
+        },
+        "invalidity": {
+          "kind": null,
+          "ids": []
+        },
+        "reconcile_inventory": {
+          "kind": null,
+          "ids": []
+        },
+        "provenance": {
+          "selected": "structured-home",
+          "structured_home": "/tmp/fm-e2e-snapshot.TSTOnX",
+          "summary_source": "local-ledger",
+          "summary_valid": true,
+          "trust": "complete",
+          "parent_event_role": "historical-only"
+        },
+        "freshness": {
+          "status": "fresh",
+          "observed_at": "2026-10-06T18:21:01Z",
+          "age_seconds": 75
+        },
+        "active_children": [
+          {
+            "id": "ship-export",
+            "kind": "ship",
+            "state": "working",
+            "repo": "alpha",
+            "name": "feat(api): ship-export Export widget for the dashboard page",
+            "source": "pane",
+            "doing": "harness busy (claude-hook)",
+            "title_plain": "Export widget for the dashboard page",
+            "since_epoch": 1790000000,
+            "produces": "pr",
+            "open_url": "https://github.com/o/alpha/issues/12"
+          },
+          {
+            "id": "scout-upload",
+            "kind": "scout",
+            "state": "working",
+            "repo": "alpha",
+            "name": "SCOUT alpha: investigate the flaky upload path",
+            "source": "pane",
+            "doing": "harness busy (claude-hook)",
+            "title_plain": "investigate the flaky upload path",
+            "since_epoch": 1790899200,
+            "produces": "report",
+            "open_url": null
+          },
+          {
+            "id": "local-landing",
+            "kind": "ship",
+            "state": "working",
+            "repo": "alpha",
+            "name": "fix: Local landing for alpha/beta",
+            "source": "pane",
+            "doing": "harness busy (claude-hook)",
+            "title_plain": "Local landing for alpha/beta",
+            "since_epoch": 1790985600,
+            "produces": "landing",
+            "open_url": "https://github.com/o/alpha/pull/44"
+          }
+        ],
+        "decisions_open": [
+          {
+            "id": "export-format",
+            "key": "export-format",
+            "verb": "captain-hold",
+            "summary": "Choose the export format",
+            "reason": "captain picks the format",
+            "hold_until": null,
+            "hold_bucket": "live",
+            "hold_age_days": 0,
+            "source": "backlog",
+            "ask": {
+              "question": "Which export format ships first?",
+              "link": "https://github.com/o/alpha/issues/12",
+              "free_text_allowed": true,
+              "options": [
+                {
+                  "label": "CSV",
+                  "id": "csv",
+                  "recommended": false
+                },
+                {
+                  "recommended": true,
+                  "id": "json",
+                  "label": "JSON (fast path)"
+                }
+              ]
+            }
+          },
+          {
+            "id": "rate-limits",
+            "key": "rate-limits",
+            "verb": "captain-hold",
+            "summary": "Rate limit policy for alpha",
+            "reason": "parked until the vendor publishes quotas",
+            "hold_until": null,
+            "hold_bucket": "live",
+            "hold_age_days": 0,
+            "source": "backlog",
+            "ask": null
+          }
+        ],
+        "holds": [
+          {
+            "id": "after-widget",
+            "title": "Follow-up after the widget",
+            "blocked_by": "ship-export",
+            "blocked_by_ids": [
+              "ship-export"
+            ],
+            "unresolved_blocker_ids": [
+              "ship-export"
+            ],
+            "reason": "blocked",
+            "source": "backlog",
+            "project": "alpha",
+            "title_plain": "Follow-up after the widget",
+            "restart": {
+              "kind": "after_work",
+              "blocker_ids": [
+                "ship-export"
+              ],
+              "text": null
+            }
+          },
+          {
+            "id": "vendor-reply",
+            "title": "Vendor reply needed",
+            "blocked_by": null,
+            "blocked_by_ids": [],
+            "unresolved_blocker_ids": [],
+            "reason": "vendor replies",
+            "source": "backlog",
+            "project": "alpha",
+            "title_plain": "Vendor reply needed",
+            "restart": {
+              "kind": "event",
+              "text": "vendor replies"
+            }
+          },
+          {
+            "id": "parked-idea",
+            "title": "Parked idea for later",
+            "blocked_by": null,
+            "blocked_by_ids": [],
+            "unresolved_blocker_ids": [],
+            "reason": "later maybe",
+            "source": "backlog",
+            "project": "alpha",
+            "title_plain": "Parked idea for later",
+            "restart": {
+              "kind": null,
+              "text": "later maybe"
+            }
+          },
+          {
+            "id": "export-format",
+            "title": "Choose the export format",
+            "blocked_by": null,
+            "blocked_by_ids": [],
+            "unresolved_blocker_ids": [],
+            "reason": "captain picks the format",
+            "source": "backlog",
+            "project": "alpha",
+            "title_plain": "Choose the export format",
+            "restart": {
+              "kind": "captain_word",
+              "text": "captain picks the format"
+            }
+          },
+          {
+            "id": "rate-limits",
+            "title": "Rate limit policy for alpha",
+            "blocked_by": null,
+            "blocked_by_ids": [],
+            "unresolved_blocker_ids": [],
+            "reason": "parked until the vendor publishes quotas",
+            "source": "backlog",
+            "project": "alpha",
+            "title_plain": "Rate limit policy for alpha",
+            "restart": {
+              "kind": null,
+              "text": "parked until the vendor publishes quotas"
+            }
+          },
+          {
+            "id": "revisit-cache",
+            "title": "Revisit the cache sizing",
+            "blocked_by": null,
+            "blocked_by_ids": [],
+            "unresolved_blocker_ids": [],
+            "reason": "revisit later",
+            "source": "backlog",
+            "project": "alpha",
+            "title_plain": "Revisit the cache sizing",
+            "restart": {
+              "kind": "date",
+              "until": "2026-12-01",
+              "text": "revisit later"
+            }
+          },
+          {
+            "id": "paused-vendor",
+            "title": "paused-vendor",
+            "blocked_by": null,
+            "blocked_by_ids": [],
+            "unresolved_blocker_ids": [],
+            "reason": "waiting for the vendor window",
+            "source": "child-state",
+            "project": "alpha",
+            "title_plain": "Wait for the vendor window",
+            "restart": {
+              "kind": "event",
+              "text": "waiting for the vendor window"
+            }
+          }
+        ],
+        "queued": [
+          {
+            "id": "revisit-cache",
+            "title": "Revisit the cache sizing",
+            "blocked_by": null,
+            "blocked_by_ids": [],
+            "unresolved_blocker_ids": [],
+            "blocked_reason": null,
+            "hold_reason": "revisit later",
+            "hold_kind": "captain",
+            "hold_until": "2026-12-01",
+            "hold_bucket": "dated",
+            "hold_age_days": 0,
+            "captain_actionable": false,
+            "repo": "alpha",
+            "kind": "captain",
+            "since": "2026-10-06"
+          },
+          {
+            "id": "after-widget",
+            "title": "Follow-up after the widget",
+            "blocked_by": "ship-export",
+            "blocked_by_ids": [
+              "ship-export"
+            ],
+            "unresolved_blocker_ids": [
+              "ship-export"
+            ],
+            "blocked_reason": null,
+            "hold_reason": null,
+            "hold_kind": null,
+            "hold_until": null,
+            "hold_bucket": null,
+            "hold_age_days": null,
+            "captain_actionable": false,
+            "repo": "alpha",
+            "kind": "ship",
+            "since": null
+          },
+          {
+            "id": "vendor-reply",
+            "title": "Vendor reply needed",
+            "blocked_by": null,
+            "blocked_by_ids": [],
+            "unresolved_blocker_ids": [],
+            "blocked_reason": null,
+            "hold_reason": "vendor replies",
+            "hold_kind": "external",
+            "hold_until": null,
+            "hold_bucket": null,
+            "hold_age_days": null,
+            "captain_actionable": false,
+            "repo": "alpha",
+            "kind": "ship",
+            "since": null
+          },
+          {
+            "id": "parked-idea",
+            "title": "Parked idea for later",
+            "blocked_by": null,
+            "blocked_by_ids": [],
+            "unresolved_blocker_ids": [],
+            "blocked_reason": null,
+            "hold_reason": "later maybe",
+            "hold_kind": "parked",
+            "hold_until": null,
+            "hold_bucket": null,
+            "hold_age_days": null,
+            "captain_actionable": false,
+            "repo": "alpha",
+            "kind": "ship",
+            "since": null
+          },
+          {
+            "id": "export-format",
+            "title": "Choose the export format",
+            "blocked_by": null,
+            "blocked_by_ids": [],
+            "unresolved_blocker_ids": [],
+            "blocked_reason": null,
+            "hold_reason": "captain picks the format",
+            "hold_kind": "captain",
+            "hold_until": null,
+            "hold_bucket": "live",
+            "hold_age_days": 0,
+            "captain_actionable": true,
+            "repo": "alpha",
+            "kind": "captain",
+            "since": "2026-10-06"
+          },
+          {
+            "id": "rate-limits",
+            "title": "Rate limit policy for alpha",
+            "blocked_by": null,
+            "blocked_by_ids": [],
+            "unresolved_blocker_ids": [],
+            "blocked_reason": null,
+            "hold_reason": "parked until the vendor publishes quotas",
+            "hold_kind": "captain",
+            "hold_until": null,
+            "hold_bucket": "live",
+            "hold_age_days": 0,
+            "captain_actionable": true,
+            "repo": "alpha",
+            "kind": "captain",
+            "since": "2026-10-06"
+          }
+        ],
+        "contributions": {
+          "known": 4,
+          "checked": 0,
+          "counts": {
+            "captain": 0,
+            "fleet": 4,
+            "maintainer": 0,
+            "nobody": 0
+          },
+          "unmeasured": 0,
+          "complete": false,
+          "proven_clear": false,
+          "stale_verdicts": 0,
+          "missing_verdicts": 0,
+          "unreadable_records": 0,
+          "valid_until": 900,
+          "captain": [],
+          "captain_omitted": 0
+        },
+        "landed": [
+          {
+            "id": "done-pr",
+            "title": "chore(ci): done-pr Speed up the lint lane",
+            "kind": "ship",
+            "hold_kind": null,
+            "pr_url": "https://github.com/o/alpha/pull/7",
+            "report_path": null,
+            "local_note": null,
+            "completion": {
+              "verb": "merged",
+              "date": "2026-09-30"
+            },
+            "project": "alpha",
+            "title_plain": "Speed up the lint lane",
+            "open_url": "https://github.com/o/alpha/pull/7"
+          },
+          {
+            "id": "done-issue",
+            "title": "Close the audit gap",
+            "kind": "ship",
+            "hold_kind": null,
+            "pr_url": null,
+            "report_path": null,
+            "local_note": null,
+            "completion": {
+              "date": "2026-09-29",
+              "verb": "done"
+            },
+            "project": "beta",
+            "title_plain": "Close the audit gap",
+            "open_url": "https://github.com/o/alpha/issues/3"
+          },
+          {
+            "id": "done-scout",
+            "title": "Scout the cache",
+            "kind": "scout",
+            "hold_kind": null,
+            "pr_url": null,
+            "report_path": "data/done-scout/report.md",
+            "local_note": null,
+            "completion": {
+              "date": "2026-09-28",
+              "verb": "reported"
+            },
+            "project": "alpha",
+            "title_plain": "Scout the cache",
+            "open_url": null
+          }
+        ],
+        "endpoints": [
+          {
+            "id": "local-landing",
+            "state": "working",
+            "source": "pane",
+            "endpoint": {
+              "target": "firstmate:fm-local-landing",
+              "exists": true,
+              "agent_alive": "not_checked",
+              "status": "unknown",
+              "observed_at": "2026-10-06T18:21:01Z",
+              "freshness": "fresh"
+            }
+          },
+          {
+            "id": "paused-vendor",
+            "state": "paused",
+            "source": "status-log",
+            "endpoint": {
+              "target": "firstmate:fm-paused-vendor",
+              "exists": true,
+              "agent_alive": "not_checked",
+              "status": "unknown",
+              "observed_at": "2026-10-06T18:21:01Z",
+              "freshness": "fresh"
+            }
+          },
+          {
+            "id": "scout-upload",
+            "state": "working",
+            "source": "pane",
+            "endpoint": {
+              "target": "firstmate:fm-scout-upload",
+              "exists": true,
+              "agent_alive": "not_checked",
+              "status": "unknown",
+              "observed_at": "2026-10-06T18:21:01Z",
+              "freshness": "fresh"
+            }
+          },
+          {
+            "id": "ship-export",
+            "state": "working",
+            "source": "pane",
+            "endpoint": {
+              "target": "firstmate:fm-ship-export",
+              "exists": true,
+              "agent_alive": "not_checked",
+              "status": "unknown",
+              "observed_at": "2026-10-06T18:21:01Z",
+              "freshness": "fresh"
+            }
+          }
+        ],
+        "counts": {
+          "active_children": 3,
+          "decisions_open": 2,
+          "asks": 1,
+          "holds": 7,
+          "queued": 6,
+          "landed": 3,
+          "endpoints": 4
+        },
+        "omitted": [],
+        "parent_event": {
+          "raw": "working: watching delegated scope",
+          "note": "watching delegated scope",
+          "age_seconds": null,
+          "open_activities": [
+            {
+              "key": "default",
+              "verb": "working",
+              "summary": "watching delegated scope"
+            }
+          ],
+          "open_decisions": [],
+          "activity_scan": {
+            "records": [
+              {
+                "key": "default",
+                "verb": "working",
+                "summary": "watching delegated scope"
+              }
+            ],
+            "available": true,
+            "input_truncated": false,
+            "retained_truncated": false,
+            "reasons": [],
+            "lines_in_window": 1,
+            "records_in_window": 1
+          },
+          "reconciliation": {
+            "provenance": "parent-status-keyed-fold",
+            "trust": "untrusted-supplement",
+            "activities": [
+              {
+                "key": "default",
+                "verb": "working",
+                "summary": "watching delegated scope",
+                "verdict": "inconclusive",
+                "compared_to": "active_children",
+                "matched": null
+              }
+            ],
+            "decisions": [],
+            "contradiction": false,
+            "inconclusive": true
+          }
+        },
+        "terminal_evidence": {
+          "provenance": "parent-direct-report-terminal",
+          "trust": "untrusted-supplement",
+          "captured": false,
+          "observed_at": "2026-10-06T18:22:16Z",
+          "freshness": "not-collected",
+          "reason": "no useful contradiction check",
+          "lines": 0,
+          "bytes": 0,
+          "event_note_seen": false,
+          "contradiction": false
+        },
+        "contradiction": false
+      }
+    ],
+    "total_registered": 1,
+    "total": 1,
+    "shown": 1,
+    "truncated": 0
+  },
+  "secondmate_landed": {
+    "records": [
+      {
+        "id": "done-pr",
+        "title": "chore(ci): done-pr Speed up the lint lane",
+        "kind": "ship",
+        "hold_kind": null,
+        "pr_url": "https://github.com/o/alpha/pull/7",
+        "report_path": null,
+        "local_note": null,
+        "completion": {
+          "verb": "merged",
+          "date": "2026-09-30"
+        },
+        "project": "alpha",
+        "title_plain": "Speed up the lint lane",
+        "open_url": "https://github.com/o/alpha/pull/7",
+        "home": "/tmp/fm-e2e-snapshot.TSTOnX",
+        "home_id": "mate-alpha"
+      },
+      {
+        "id": "done-issue",
+        "title": "Close the audit gap",
+        "kind": "ship",
+        "hold_kind": null,
+        "pr_url": null,
+        "report_path": null,
+        "local_note": null,
+        "completion": {
+          "date": "2026-09-29",
+          "verb": "done"
+        },
+        "project": "beta",
+        "title_plain": "Close the audit gap",
+        "open_url": "https://github.com/o/alpha/issues/3",
+        "home": "/tmp/fm-e2e-snapshot.TSTOnX",
+        "home_id": "mate-alpha"
+      },
+      {
+        "id": "done-scout",
+        "title": "Scout the cache",
+        "kind": "scout",
+        "hold_kind": null,
+        "pr_url": null,
+        "report_path": "data/done-scout/report.md",
+        "local_note": null,
+        "completion": {
+          "date": "2026-09-28",
+          "verb": "reported"
+        },
+        "project": "alpha",
+        "title_plain": "Scout the cache",
+        "open_url": null,
+        "home": "/tmp/fm-e2e-snapshot.TSTOnX",
+        "home_id": "mate-alpha"
+      }
+    ],
+    "truncated": [],
+    "unreadable": [],
+    "partial": []
+  },
+  "secondmate_guidance": {
+    "note": "For kind=secondmate, bearings selects validated structured state from that registered home; parent events and bounded terminal evidence are fallback-only supplements and never current-state authority."
+  }
+}

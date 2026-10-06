@@ -1,0 +1,15 @@
+{
+  "schema": "fm-bearings.v1",
+  "decisions_open": [
+    {
+      "id": "export-format",
+      "verb": "captain-hold",
+      "summary": "Choose the export format: captain picks the format"
+    },
+    {
+      "id": "rate-limits",
+      "verb": "captain-hold",
+      "summary": "Rate limit policy for alpha: parked until the vendor publishes quotas"
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "counts_holds": 7,
+  "omitted": [],
+  "holds": [
+    {
+      "id": "after-widget",
+      "source": "backlog",
+      "restart": {
+        "kind": "after_work",
+        "blocker_ids": [
+          "ship-export"
+        ],
+        "text": null
+      }
+    },
+    {
+      "id": "vendor-reply",
+      "source": "backlog",
+      "restart": {
+        "kind": "event",
+        "text": "vendor replies"
+      }
+    },
+    {
+      "id": "parked-idea",
+      "source": "backlog",
+      "restart": {
+        "kind": null,
+        "text": "later maybe"
+      }
+    },
+    {
+      "id": "export-format",
+      "source": "backlog",
+      "restart": {
+        "kind": "captain_word",
+        "text": "captain picks the format"
+      }
+    },
+    {
+      "id": "rate-limits",
+      "source": "backlog",
+      "restart": {
+        "kind": null,
+        "text": "parked until the vendor publishes quotas"
+      }
+    },
+    {
+      "id": "revisit-cache",
+      "source": "backlog",
+      "restart": {
+        "kind": "date",
+        "until": "2026-12-01",
+        "text": "revisit later"
+      }
+    },
+    {
+      "id": "paused-vendor",
+      "source": "child-state",
+      "restart": {
+        "kind": "event",
+        "text": "waiting for the vendor window"
+      }
+    }
+  ]
+}

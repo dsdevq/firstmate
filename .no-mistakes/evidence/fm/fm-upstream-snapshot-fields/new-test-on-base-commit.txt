@@ -1,0 +1,7 @@
+# Only the two NEW test functions, run against a copy of the BASE commit e06a46f (before the change):
+not ok - home summary did not bump its schema id: {
+exit=1
+
+# Same, with the schema-id assertion removed so the next assertion is reached:
+not ok - asks must come only from the stored structured line, additively on decisions_open: {
+exit=1

@@ -1,0 +1,146 @@
+== decisions_open (real asks: ask present only on the hold recorded with --ask-file) ==
+[
+  {
+    "id": "export-format",
+    "hold_bucket": "live",
+    "reason": "captain picks the format",
+    "ask": {
+      "link": "https://github.com/o/alpha/issues/12",
+      "question": "Which export format ships first?",
+      "options": [
+        {
+          "label": "CSV",
+          "id": "csv",
+          "recommended": false
+        },
+        {
+          "recommended": true,
+          "id": "json",
+          "label": "JSON (fast path)"
+        }
+      ],
+      "free_text_allowed": true
+    }
+  },
+  {
+    "id": "rate-limits",
+    "hold_bucket": "live",
+    "reason": "parked until the vendor publishes quotas",
+    "ask": null
+  }
+]
+== active_children (working) ==
+[
+  {
+    "id": "ship-export",
+    "kind": "ship",
+    "name": "feat(api): ship-export Export widget for the dashboard page",
+    "title_plain": "Export widget for the dashboard page",
+    "since_epoch": 1790000000,
+    "produces": "pr",
+    "open_url": "https://github.com/o/alpha/issues/12",
+    "doing": "harness busy (claude-hook)"
+  },
+  {
+    "id": "scout-upload",
+    "kind": "scout",
+    "name": "SCOUT alpha: investigate the flaky upload path",
+    "title_plain": "investigate the flaky upload path",
+    "since_epoch": 1790899200,
+    "produces": "report",
+    "open_url": null,
+    "doing": "harness busy (claude-hook)"
+  },
+  {
+    "id": "local-landing",
+    "kind": "ship",
+    "name": "fix: Local landing for alpha/beta",
+    "title_plain": "Local landing for alpha/beta",
+    "since_epoch": 1790985600,
+    "produces": "landing",
+    "open_url": "https://github.com/o/alpha/pull/44",
+    "doing": "harness busy (claude-hook)"
+  }
+]
+== landed ==
+[
+  {
+    "id": "done-pr",
+    "project": "alpha",
+    "title_plain": "Speed up the lint lane",
+    "open_url": "https://github.com/o/alpha/pull/7",
+    "pr_url": "https://github.com/o/alpha/pull/7",
+    "report_path": null
+  },
+  {
+    "id": "done-issue",
+    "project": "beta",
+    "title_plain": "Close the audit gap",
+    "open_url": "https://github.com/o/alpha/issues/3",
+    "pr_url": null,
+    "report_path": null
+  },
+  {
+    "id": "done-scout",
+    "project": "alpha",
+    "title_plain": "Scout the cache",
+    "open_url": null,
+    "pr_url": null,
+    "report_path": "data/done-scout/report.md"
+  }
+]
+== holds (parked), capped at FM_SNAPSHOT_SECONDMATE_QUEUED=4 ==
+{
+  "holds": [
+    {
+      "id": "after-widget",
+      "project": "alpha",
+      "title_plain": "Follow-up after the widget",
+      "restart": {
+        "kind": "after_work",
+        "blocker_ids": [
+          "ship-export"
+        ],
+        "text": null
+      }
+    },
+    {
+      "id": "vendor-reply",
+      "project": "alpha",
+      "title_plain": "Vendor reply needed",
+      "restart": {
+        "kind": "event",
+        "text": "vendor replies"
+      }
+    },
+    {
+      "id": "parked-idea",
+      "project": "alpha",
+      "title_plain": "Parked idea for later",
+      "restart": {
+        "kind": null,
+        "text": "later maybe"
+      }
+    },
+    {
+      "id": "export-format",
+      "project": "alpha",
+      "title_plain": "Choose the export format",
+      "restart": {
+        "kind": "captain_word",
+        "text": "captain picks the format"
+      }
+    }
+  ],
+  "counts_holds": 7,
+  "omitted": [
+    {
+      "surface": "holds",
+      "count": 3
+    },
+    {
+      "surface": "queued",
+      "count": 2
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+$ fm-secondmate-reconcile.sh notify --snapshot parent-fleet-snapshot.json   (schema fm-fleet-snapshot.v2)
+exit=0
+
+$ jq ".schema=\"fm-fleet-snapshot.v3\"" parent-fleet-snapshot.json | fm-secondmate-reconcile.sh notify --snapshot -
+fm-secondmate-reconcile: input is not an fm-fleet-snapshot.v2 (or v1) or fm-bearings.v1 document
+exit=2

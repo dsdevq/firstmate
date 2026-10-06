@@ -1,0 +1,51 @@
+{
+  "id": "vendor-reply",
+  "hold_bucket": null,
+  "hold_until": null,
+  "captain_actionable": false,
+  "ask": null
+}
+{
+  "id": "parked-idea",
+  "hold_bucket": null,
+  "hold_until": null,
+  "captain_actionable": false,
+  "ask": null
+}
+{
+  "id": "export-format",
+  "hold_bucket": "live",
+  "hold_until": null,
+  "captain_actionable": true,
+  "ask": {
+    "free_text_allowed": true,
+    "question": "Which export format ships first?",
+    "options": [
+      {
+        "recommended": false,
+        "id": "csv",
+        "label": "CSV"
+      },
+      {
+        "recommended": true,
+        "label": "JSON (fast path)",
+        "id": "json"
+      }
+    ],
+    "link": "https://github.com/o/alpha/issues/12"
+  }
+}
+{
+  "id": "rate-limits",
+  "hold_bucket": "live",
+  "hold_until": null,
+  "captain_actionable": true,
+  "ask": null
+}
+{
+  "id": "revisit-cache",
+  "hold_bucket": "dated",
+  "hold_until": "2026-12-01",
+  "captain_actionable": false,
+  "ask": null
+}

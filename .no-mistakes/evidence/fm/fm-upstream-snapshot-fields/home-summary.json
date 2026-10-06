@@ -1,0 +1,382 @@
+{
+  "schema": "fm-secondmate-home-summary.v2",
+  "hold_classifier_schema": "fm-captain-hold-buckets.v1",
+  "contributions": {
+    "known": 4,
+    "checked": 0,
+    "counts": {
+      "captain": 0,
+      "fleet": 4,
+      "maintainer": 0,
+      "nobody": 0
+    },
+    "unmeasured": 0,
+    "complete": false,
+    "proven_clear": false,
+    "stale_verdicts": 0,
+    "missing_verdicts": 0,
+    "unreadable_records": 0,
+    "valid_until": 900,
+    "captain": [],
+    "captain_omitted": 0
+  },
+  "generated": "2026-10-06T18:18:35Z",
+  "generated_epoch": 1791310715,
+  "home": "/tmp/fm-e2e-snapshot.TSTOnX",
+  "valid": true,
+  "reason": null,
+  "invalidity": {
+    "kind": null,
+    "ids": []
+  },
+  "state": "captain_decision",
+  "active_children": [
+    {
+      "id": "ship-export",
+      "kind": "ship",
+      "state": "working",
+      "repo": "alpha",
+      "name": "feat(api): ship-export Export widget for the dashboard page",
+      "source": "pane",
+      "doing": "harness busy (claude-hook)",
+      "title_plain": "Export widget for the dashboard page",
+      "since_epoch": 1790000000,
+      "produces": "pr",
+      "open_url": "https://github.com/o/alpha/issues/12"
+    },
+    {
+      "id": "scout-upload",
+      "kind": "scout",
+      "state": "working",
+      "repo": "alpha",
+      "name": "SCOUT alpha: investigate the flaky upload path",
+      "source": "pane",
+      "doing": "harness busy (claude-hook)",
+      "title_plain": "investigate the flaky upload path",
+      "since_epoch": 1790899200,
+      "produces": "report",
+      "open_url": null
+    },
+    {
+      "id": "local-landing",
+      "kind": "ship",
+      "state": "working",
+      "repo": "alpha",
+      "name": "fix: Local landing for alpha/beta",
+      "source": "pane",
+      "doing": "harness busy (claude-hook)",
+      "title_plain": "Local landing for alpha/beta",
+      "since_epoch": 1790985600,
+      "produces": "landing",
+      "open_url": "https://github.com/o/alpha/pull/44"
+    }
+  ],
+  "decisions_open": [
+    {
+      "id": "export-format",
+      "key": "export-format",
+      "verb": "captain-hold",
+      "summary": "Choose the export format",
+      "reason": "captain picks the format",
+      "hold_until": null,
+      "hold_bucket": "live",
+      "hold_age_days": 0,
+      "source": "backlog",
+      "ask": {
+        "link": "https://github.com/o/alpha/issues/12",
+        "question": "Which export format ships first?",
+        "options": [
+          {
+            "label": "CSV",
+            "id": "csv",
+            "recommended": false
+          },
+          {
+            "recommended": true,
+            "id": "json",
+            "label": "JSON (fast path)"
+          }
+        ],
+        "free_text_allowed": true
+      }
+    },
+    {
+      "id": "rate-limits",
+      "key": "rate-limits",
+      "verb": "captain-hold",
+      "summary": "Rate limit policy for alpha",
+      "reason": "parked until the vendor publishes quotas",
+      "hold_until": null,
+      "hold_bucket": "live",
+      "hold_age_days": 0,
+      "source": "backlog",
+      "ask": null
+    }
+  ],
+  "holds": [
+    {
+      "id": "after-widget",
+      "title": "Follow-up after the widget",
+      "blocked_by": "ship-export",
+      "blocked_by_ids": [
+        "ship-export"
+      ],
+      "unresolved_blocker_ids": [
+        "ship-export"
+      ],
+      "reason": "blocked",
+      "source": "backlog",
+      "project": "alpha",
+      "title_plain": "Follow-up after the widget",
+      "restart": {
+        "kind": "after_work",
+        "blocker_ids": [
+          "ship-export"
+        ],
+        "text": null
+      }
+    },
+    {
+      "id": "vendor-reply",
+      "title": "Vendor reply needed",
+      "blocked_by": null,
+      "blocked_by_ids": [],
+      "unresolved_blocker_ids": [],
+      "reason": "vendor replies",
+      "source": "backlog",
+      "project": "alpha",
+      "title_plain": "Vendor reply needed",
+      "restart": {
+        "kind": "event",
+        "text": "vendor replies"
+      }
+    },
+    {
+      "id": "parked-idea",
+      "title": "Parked idea for later",
+      "blocked_by": null,
+      "blocked_by_ids": [],
+      "unresolved_blocker_ids": [],
+      "reason": "later maybe",
+      "source": "backlog",
+      "project": "alpha",
+      "title_plain": "Parked idea for later",
+      "restart": {
+        "kind": null,
+        "text": "later maybe"
+      }
+    },
+    {
+      "id": "export-format",
+      "title": "Choose the export format",
+      "blocked_by": null,
+      "blocked_by_ids": [],
+      "unresolved_blocker_ids": [],
+      "reason": "captain picks the format",
+      "source": "backlog",
+      "project": "alpha",
+      "title_plain": "Choose the export format",
+      "restart": {
+        "kind": "captain_word",
+        "text": "captain picks the format"
+      }
+    }
+  ],
+  "queued": [
+    {
+      "id": "revisit-cache",
+      "title": "Revisit the cache sizing",
+      "blocked_by": null,
+      "blocked_by_ids": [],
+      "unresolved_blocker_ids": [],
+      "blocked_reason": null,
+      "hold_reason": "revisit later",
+      "hold_kind": "captain",
+      "hold_until": "2026-12-01",
+      "hold_bucket": "dated",
+      "hold_age_days": 0,
+      "captain_actionable": false,
+      "repo": "alpha",
+      "kind": "captain",
+      "since": "2026-10-06"
+    },
+    {
+      "id": "after-widget",
+      "title": "Follow-up after the widget",
+      "blocked_by": "ship-export",
+      "blocked_by_ids": [
+        "ship-export"
+      ],
+      "unresolved_blocker_ids": [
+        "ship-export"
+      ],
+      "blocked_reason": null,
+      "hold_reason": null,
+      "hold_kind": null,
+      "hold_until": null,
+      "hold_bucket": null,
+      "hold_age_days": null,
+      "captain_actionable": false,
+      "repo": "alpha",
+      "kind": "ship",
+      "since": null
+    },
+    {
+      "id": "vendor-reply",
+      "title": "Vendor reply needed",
+      "blocked_by": null,
+      "blocked_by_ids": [],
+      "unresolved_blocker_ids": [],
+      "blocked_reason": null,
+      "hold_reason": "vendor replies",
+      "hold_kind": "external",
+      "hold_until": null,
+      "hold_bucket": null,
+      "hold_age_days": null,
+      "captain_actionable": false,
+      "repo": "alpha",
+      "kind": "ship",
+      "since": null
+    },
+    {
+      "id": "parked-idea",
+      "title": "Parked idea for later",
+      "blocked_by": null,
+      "blocked_by_ids": [],
+      "unresolved_blocker_ids": [],
+      "blocked_reason": null,
+      "hold_reason": "later maybe",
+      "hold_kind": "parked",
+      "hold_until": null,
+      "hold_bucket": null,
+      "hold_age_days": null,
+      "captain_actionable": false,
+      "repo": "alpha",
+      "kind": "ship",
+      "since": null
+    }
+  ],
+  "landed": [
+    {
+      "id": "done-pr",
+      "title": "chore(ci): done-pr Speed up the lint lane",
+      "kind": "ship",
+      "hold_kind": null,
+      "pr_url": "https://github.com/o/alpha/pull/7",
+      "report_path": null,
+      "local_note": null,
+      "completion": {
+        "date": "2026-09-30",
+        "verb": "merged"
+      },
+      "project": "alpha",
+      "title_plain": "Speed up the lint lane",
+      "open_url": "https://github.com/o/alpha/pull/7"
+    },
+    {
+      "id": "done-issue",
+      "title": "Close the audit gap",
+      "kind": "ship",
+      "hold_kind": null,
+      "pr_url": null,
+      "report_path": null,
+      "local_note": null,
+      "completion": {
+        "verb": "done",
+        "date": "2026-09-29"
+      },
+      "project": "beta",
+      "title_plain": "Close the audit gap",
+      "open_url": "https://github.com/o/alpha/issues/3"
+    },
+    {
+      "id": "done-scout",
+      "title": "Scout the cache",
+      "kind": "scout",
+      "hold_kind": null,
+      "pr_url": null,
+      "report_path": "data/done-scout/report.md",
+      "local_note": null,
+      "completion": {
+        "date": "2026-09-28",
+        "verb": "reported"
+      },
+      "project": "alpha",
+      "title_plain": "Scout the cache",
+      "open_url": null
+    }
+  ],
+  "endpoints": [
+    {
+      "id": "local-landing",
+      "state": "working",
+      "source": "pane",
+      "endpoint": {
+        "target": "firstmate:fm-local-landing",
+        "exists": true,
+        "agent_alive": "not_checked",
+        "status": "unknown",
+        "observed_at": "2026-10-06T18:18:35Z",
+        "freshness": "fresh"
+      }
+    },
+    {
+      "id": "paused-vendor",
+      "state": "paused",
+      "source": "status-log",
+      "endpoint": {
+        "target": "firstmate:fm-paused-vendor",
+        "exists": true,
+        "agent_alive": "not_checked",
+        "status": "unknown",
+        "observed_at": "2026-10-06T18:18:35Z",
+        "freshness": "fresh"
+      }
+    },
+    {
+      "id": "scout-upload",
+      "state": "working",
+      "source": "pane",
+      "endpoint": {
+        "target": "firstmate:fm-scout-upload",
+        "exists": true,
+        "agent_alive": "not_checked",
+        "status": "unknown",
+        "observed_at": "2026-10-06T18:18:35Z",
+        "freshness": "fresh"
+      }
+    },
+    {
+      "id": "ship-export",
+      "state": "working",
+      "source": "pane",
+      "endpoint": {
+        "target": "firstmate:fm-ship-export",
+        "exists": true,
+        "agent_alive": "not_checked",
+        "status": "unknown",
+        "observed_at": "2026-10-06T18:18:35Z",
+        "freshness": "fresh"
+      }
+    }
+  ],
+  "counts": {
+    "active_children": 3,
+    "decisions_open": 2,
+    "asks": 1,
+    "holds": 7,
+    "queued": 6,
+    "landed": 3,
+    "endpoints": 4
+  },
+  "omitted": [
+    {
+      "surface": "holds",
+      "count": 3
+    },
+    {
+      "surface": "queued",
+      "count": 2
+    }
+  ]
+}
