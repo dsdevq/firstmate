@@ -769,21 +769,20 @@ captain_markdown_archive_path() {  # <root> <data-dir>; prints the resolved arch
   esac
 }
 
-# Print "<entry> archived-answer" when the markdown backend's configured
-# archive carries a done row for <entry> whose body already carries a recorded
-# resolution; returns 1 for a non-markdown backend, an absent archive, an
-# absent row, or a row with no recorded answer. Read-only: never mutates the
-# archive. A repeated id keeps its newest occurrence, matching how archive
-# blocks accumulate chronologically.
-resolve_archived_answer_entry() {  # <entry>
-  local entry=$1 data root backend archive body
+# Print the body of the done row for <entry> in the markdown backend's
+# configured archive; returns 1 for a non-markdown backend, an absent archive,
+# or an absent row. Read-only: never mutates the archive. A repeated id keeps
+# its newest occurrence, matching how archive blocks accumulate
+# chronologically.
+archived_row_body() {  # <entry>
+  local entry=$1 data root backend archive
   data=$(fm_backlog_data_absolute "$DATA") || return 1
   root=$(fm_backlog_root "$data") || return 1
   backend=$(fm_tasks_axi_backend "$root") || return 1
   [ "$backend" = markdown ] || return 1
   archive=$(captain_markdown_archive_path "$root" "$data")
   [ -f "$archive" ] || return 1
-  body=$(LC_ALL=C awk -v key="$entry" '
+  LC_ALL=C awk -v key="$entry" '
     /^- \[[ x]\] / {
       checked = ($0 ~ /^- \[x\] /)
       rest = $0
@@ -806,7 +805,14 @@ resolve_archived_answer_entry() {  # <entry>
       body = body line "\n"
     }
     END { if (matched) { printf "%s", body; exit 0 } exit 1 }
-  ' "$archive") || return 1
+  ' "$archive"
+}
+
+# Print "<entry> archived-answer" when the archived done row for <entry>
+# already carries a recorded resolution; returns 1 otherwise.
+resolve_archived_answer_entry() {  # <entry>
+  local entry=$1 body
+  body=$(archived_row_body "$entry") || return 1
   body_has_resolution_record "$body" || return 1
   printf '%s archived-answer' "$entry"
 }
@@ -970,22 +976,22 @@ verify_entry_durable() {  # <origin-or-empty> <entry>; prints "<id> <how> <origi
   fi
   id=${resolved%% *}
   how=${resolved##* }
-  # archived-answer already proved durability by finding a recorded resolution
-  # in the archive row itself; the id no longer exists in the live backlog by
-  # design, so verify_hold_durable's task_show would misreport it as absent,
-  # and the archived row is not shown, so no origin can be compared.
-  if [ "$how" = archived-answer ]; then
-    printf '%s %s %s\n' "$id" "$how" "$origin_state"
-    return 0
-  fi
-  verify_hold_durable "$id"
-  id=$(show_field_value "$TASK_SHOW_OUTPUT" id)
-  validate_slug backend-task-id "$id"
-  stored=$(body_hold_origin "$(decode_shown_value "$(show_field "$TASK_SHOW_OUTPUT" body)")")
   origin_id=$origin
   if [ -n "$origin" ] && [ "$origin" != "$BINDING_ANY" ]; then
     origin_id=$(task_identity "$origin") || exit $?
-    [ "$id" != "$origin_id" ] || refuse_self_inventory "$origin" "$entry"
+  fi
+  # archived-answer already proved durability by finding a recorded resolution
+  # in the archive row itself; the id no longer exists in the live backlog by
+  # design, so verify_hold_durable's task_show would misreport it as absent.
+  if [ "$how" = archived-answer ]; then
+    stored=$(body_hold_origin "$(archived_row_body "$id")")
+  else
+    verify_hold_durable "$id"
+    id=$(show_field_value "$TASK_SHOW_OUTPUT" id)
+    validate_slug backend-task-id "$id"
+    stored=$(body_hold_origin "$(decode_shown_value "$(show_field "$TASK_SHOW_OUTPUT" body)")")
+    [ "$id" != "$origin_id" ] || [ "$origin" = "$BINDING_ANY" ] || [ -z "$origin" ] \
+      || refuse_self_inventory "$origin" "$entry"
   fi
   if [ -n "$stored" ]; then
     if [ -n "$origin" ] && [ "$origin" != "$BINDING_ANY" ]; then

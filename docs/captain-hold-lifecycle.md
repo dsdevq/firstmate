@@ -112,7 +112,7 @@ The origin is never its own inventory entry, so a hold that failed cannot be vou
 For a historical inventory that names its own origin, hold a separate captain task with `--origin`, replace only the invalid entry in the final `decision_keys=` line of the origin metadata with that task id while preserving all other entries, and re-run `complete`.
 An entry whose recorded origin differs from the one being completed is refused.
 An entry with no recorded origin, such as a hold made before origins were recorded or without `--origin`, is accepted on the durability check alone and named in the output.
-An answered entry that the markdown backend's `done_keep` retention rotated into the configured archive is accepted on its recorded answer and named in that same output, because the archived row is read-only and carries no origin to compare.
+An answered entry that the markdown backend's `done_keep` retention rotated into the configured archive is accepted on its recorded answer, and its recorded origin is checked like a live row's.
 
 With a non-empty inventory, `complete` appends a `captain-held [key=<key>]` transfer event for every still-open keyed status decision.
 The event names the reviewed inventory.

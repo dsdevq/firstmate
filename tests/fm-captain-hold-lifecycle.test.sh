@@ -729,6 +729,42 @@ test_verify_resolves_a_legacy_answer_rotated_into_the_markdown_archive() {
   pass "verify and complete resolve a legacy captain answer rotated into the markdown archive"
 }
 
+test_archived_answer_keeps_its_recorded_origin_binding() {
+  local home owner other out status
+  home=$(make_home archived-origin)
+  owner=sample-archived-owner
+  other=sample-archived-other
+  for id in "$owner" "$other"; do
+    mkdir -p "$home/data/$id"
+    tasks_in "$home" add "$id" "Investigate $id" --kind scout --repo sample --start >/dev/null \
+      || fail "could not create origin $id"
+    write_origin_meta "$home" "$id"
+    printf 'done: report complete\n' > "$home/state/$id.status"
+    printf '# Report\n\nThe investigation finished.\n' > "$home/data/$id/report.md"
+  done
+  run_captain "$home" hold sample-archived-bound-call \
+    --title "Choose the bound option" --reason "captain choice pending" --repo sample --origin "$owner" >/dev/null \
+    || fail "could not register the origin-bound captain-held task"
+  printf 'Captain chose the bound option.\n' > "$home/bound-decision.txt"
+  run_captain "$home" answer sample-archived-bound-call --decision-file "$home/bound-decision.txt" >/dev/null \
+    || fail "answer could not close the captain-held task"
+  tasks_in "$home" prune --keep 0 --state 'done' >/dev/null \
+    || fail "could not rotate the answered row into the archive"
+  assert_no_grep "sample-archived-bound-call" "$home/data/backlog.md" \
+    "the answered row was not rotated out of the live backlog"
+
+  status=0
+  out=$(run_captain "$home" complete "$other" sample-archived-bound-call 2>&1) || status=$?
+  [ "$status" -ne 0 ] || fail "complete accepted an archived answer held for another origin"
+  assert_contains "$out" "was held for origin $owner, not $other" \
+    "the refusal did not name the recorded origin of the archived row"
+  out=$(run_captain "$home" complete "$owner" sample-archived-bound-call) \
+    || fail "complete refused an archived answer held for this origin"
+  assert_not_contains "$out" "no recorded origin on" \
+    "an archived row with a recorded origin was reported as unrecorded"
+  pass "an archived captain answer keeps its recorded origin binding"
+}
+
 test_archived_row_without_a_recorded_answer_still_fails_resolution() {
   local home scout out status
   home=$(make_home archived-unanswered)
@@ -4813,5 +4849,6 @@ test_verify_resolves_a_pre_collapse_key_through_its_derived_marker
 test_captain_hold_mutations_address_the_beads_backend
 test_verify_resolves_an_answer_rotated_into_the_markdown_archive
 test_verify_resolves_a_legacy_answer_rotated_into_the_markdown_archive
+test_archived_answer_keeps_its_recorded_origin_binding
 test_archived_row_without_a_recorded_answer_still_fails_resolution
 test_hold_creates_a_captain_row_when_beads_requires_due_without_custom_type
