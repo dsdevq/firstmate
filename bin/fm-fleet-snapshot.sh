@@ -92,7 +92,10 @@
 #     Each structured-home record carries active_children, decisions_open, holds,
 #     queued, landed, endpoints, counts, and omitted, as published by that home's
 #     `--secondmate-home-summary` (schema `fm-secondmate-home-summary.v2`; v1
-#     summaries from older producers lack the page fields below):
+#     summaries from older producers lack the page fields below; a mixed-version
+#     fleet upgrades the parent home first, because this reader accepts v1 and
+#     v2 while an older parent accepts only v1 and reports an upgraded child's v2
+#     summary as unavailable until the parent upgrades):
 #       decisions_open rows keep every live captain hold and keyed status
 #       decision, each with `ask` (the backlog ask, or null); counts.asks counts
 #       rows carrying one. The list is not narrowed to asks because current

@@ -2,9 +2,8 @@
 # fm-hold-ask-lib.sh - the one contract for a captain hold's structured ask.
 #
 # A captain hold whose restart condition is the captain's answer may carry an
-# ask: the question and how it can be answered, in the shape of the
-# notify-relay decision contract v1 (lifekit-stack
-# compose/notify-relay/decision-contract.schema.json). bin/fm-captain-hold.sh
+# ask: the question, the options that answer it, whether a free-text answer is
+# accepted, and an optional link to more context. bin/fm-captain-hold.sh
 # `hold --ask-file` validates, normalizes, and writes it at hold time, and
 # bin/fm-fleet-snapshot.sh reads it back. Neither reads hold reason or body
 # prose to guess an ask: a hold without this structured line has no ask.
