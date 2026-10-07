@@ -1300,11 +1300,15 @@ test_plain_title_bounds_at_word_boundary() {
 
 ## Done
 - [x] long-title - refactor(bin): Rework the supervision wake path so that every queued notification reaches the right home exactly once https://github.com/o/alpha/pull/9 (repo: alpha) (kind: ship) (merged 2026-07-06)
+- [x] cased-status - docs: Done: Finish the docs page (repo: alpha) (kind: ship) (merged 2026-07-06)
 EOF
   fakebin=$(make_fakebin "$home")
   out=$(PATH="$fakebin:$PATH" FM_HOME="$home" "$SNAPSHOT" --secondmate-home-summary)
   printf '%s' "$out" | jq -e '
-    .landed[0].title_plain as $t
+    (.landed | map(select(.id == "cased-status")) | .[0].title_plain) == "Finish the docs page"
+  ' >/dev/null || fail "a capitalised status word must be stripped from title_plain: $out"
+  printf '%s' "$out" | jq -e '
+    (.landed | map(select(.id == "long-title")) | .[0].title_plain) as $t
     | ($t | endswith("…")) and ($t | length) <= 91
       and ("Rework the supervision wake path so that every queued notification reaches the right home exactly once"
            | startswith($t | rtrimstr("…")))
@@ -1312,7 +1316,7 @@ EOF
       and ("Rework the supervision wake path so that every queued notification reaches the right home exactly once"
            | .[($t | rtrimstr("…") | length):] | test("^[[:space:]]"))
   ' >/dev/null || fail "a long plain title must be cut at a word boundary: $out"
-  pass "plain titles drop prefixes and are never cut mid-word"
+  pass "plain titles drop prefixes and status words and are never cut mid-word"
 }
 
 test_empty_fleet_json

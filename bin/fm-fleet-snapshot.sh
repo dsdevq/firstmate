@@ -1058,7 +1058,7 @@ secondmate_home_summary_json() {  # <backlog-json-file> <tasks-json-file>
           sub("^[[:space:]:;,.-]+"; "")
           | sub("^(?:feat|fix|chore|docs|refactor|test|tests|perf|build|ci|style|revert)(?:\\([^)]*\\))?!?:[[:space:]]*"; "")
           | sub("^(?:SCOUT|SHIP)(?![A-Za-z0-9_])[[:space:]]*:?"; "")
-          | sub("^(?:[Ss]cout|[Ss]hip|working|blocked|paused|parked|needs-decision|done|failed)[[:space:]]*:[[:space:]]*"; "")
+          | sub("^(?:scout|ship|working|blocked|paused|parked|needs-decision|done|failed)[[:space:]]*:[[:space:]]*"; ""; "i")
           | sub("^[A-Za-z0-9._/-]*#[0-9]+(?![0-9])[[:space:]]*:?"; "")
           | (if $repo != "" and (ascii_downcase | startswith($repo + ":"))
              then .[($repo | length) + 1:] else . end))
