@@ -1,0 +1,34 @@
+### default no-mistakes
+scaffolded: /tmp/fm-lab.Y9wZPh/data/lab-default-1/brief.md (ship, mode=no-mistakes; replace {TASK} and {FIRSTMATE_SPEC})
+rc=0
+### checkpoint
+scaffolded: /tmp/fm-lab.Y9wZPh/data/lab-ckpt-2/brief.md (ship, mode=no-mistakes; replace {TASK} and {FIRSTMATE_SPEC})
+rc=0
+### refuse: --mode direct-PR --checkpoint
+error: --checkpoint applies only to --mode no-mistakes ship briefs without a forge; the other modes run no pipeline and the Gerrit review pass already stops at the commit
+rc=1
+### refuse: --mode local-only --checkpoint
+error: --checkpoint applies only to --mode no-mistakes ship briefs without a forge; the other modes run no pipeline and the Gerrit review pass already stops at the commit
+rc=1
+### refuse: --mode no-mistakes --forge gerrit --checkpoint
+error: --checkpoint applies only to --mode no-mistakes ship briefs without a forge; the other modes run no pipeline and the Gerrit review pass already stops at the commit
+rc=1
+### refuse: --scout --checkpoint
+error: --checkpoint applies only to --mode no-mistakes ship briefs without a forge; the other modes run no pipeline and the Gerrit review pass already stops at the commit
+rc=1
+=== generated brief DoD: lab-default-1
+# Definition of done
+Delivery contract: mode=no-mistakes
+Ship branch: fm/lab-default-1
+The task is complete only when committed on your branch.
+When you believe it is complete and committed, append `done [at=<epoch>]: {summary}` to the status file as your commit-stage line, then in the same turn run /no-mistakes yourself to validate and ship a PR; do not stop and wait for firstmate to tell you to.
+That first `done:` records the handoff to the pipeline, which owns the push; it is not a request to push from this copy.
+
+=== generated brief DoD: lab-ckpt-2
+# Definition of done
+Delivery contract: mode=no-mistakes
+Ship branch: fm/lab-ckpt-2
+The task is complete only when committed on your branch.
+When you believe it is complete, append `done [at=<epoch>]: {summary}` to the status file and stop.
+Firstmate will then instruct you to run /no-mistakes to validate and ship a PR.
+That first `done:` is the handoff that starts the pipeline, which owns the push; it is not a request to push from this copy.
