@@ -1,0 +1,210 @@
+{
+  "schema": "fm-secondmate-home-summary.v2",
+  "counts": {
+    "active_children": 3,
+    "decisions_open": 3,
+    "asks": 1,
+    "holds": 9,
+    "queued": 7,
+    "landed": 3,
+    "endpoints": 5
+  },
+  "decisions_open": [
+    {
+      "id": "ask-hold",
+      "hold_bucket": "live",
+      "ask": {
+        "link": "https://board.example/session/b1",
+        "question": "Which export format ships first?",
+        "free_text_allowed": true,
+        "options": [
+          {
+            "recommended": false,
+            "id": "csv",
+            "label": "CSV"
+          },
+          {
+            "recommended": true,
+            "id": "json",
+            "label": "JSON"
+          }
+        ]
+      }
+    },
+    {
+      "id": "plain-hold",
+      "hold_bucket": "live",
+      "ask": null
+    },
+    {
+      "id": "bad-ask-hold",
+      "hold_bucket": "live",
+      "ask": null
+    }
+  ],
+  "active_children": [
+    {
+      "id": "ship-a",
+      "name": "feat(api): ship-a Export widget for the dashboard page",
+      "title_plain": "Export widget for the dashboard page",
+      "kind": "ship",
+      "since_epoch": 1783000000,
+      "produces": "pr",
+      "open_url": "https://github.com/o/alpha/issues/12"
+    },
+    {
+      "id": "scout-b",
+      "name": "SCOUT alpha: investigate the flaky upload path",
+      "title_plain": "investigate the flaky upload path",
+      "kind": "scout",
+      "since_epoch": 1783468800,
+      "produces": "report",
+      "open_url": null
+    },
+    {
+      "id": "local-c",
+      "name": "fix: Local landing for alpha/beta",
+      "title_plain": "Local landing for alpha/beta",
+      "kind": "ship",
+      "since_epoch": 1783555200,
+      "produces": "landing",
+      "open_url": "https://github.com/o/alpha/pull/44"
+    }
+  ],
+  "landed": [
+    {
+      "id": "done-pr",
+      "project": "alpha",
+      "title_plain": "Speed up the lint lane",
+      "open_url": "https://github.com/o/alpha/pull/7",
+      "report_path": null
+    },
+    {
+      "id": "done-issue",
+      "project": "beta",
+      "title_plain": "Close the audit gap",
+      "open_url": "https://github.com/o/alpha/issues/3",
+      "report_path": null
+    },
+    {
+      "id": "done-scout",
+      "project": "alpha",
+      "title_plain": "Scout the cache",
+      "open_url": null,
+      "report_path": "data/done-scout/report.md"
+    }
+  ],
+  "holds": [
+    {
+      "id": "ask-hold",
+      "source": "backlog",
+      "project": "alpha",
+      "title_plain": "Choose the export format",
+      "restart": {
+        "kind": "captain_word",
+        "text": "Options: CSV or JSON?"
+      }
+    },
+    {
+      "id": "plain-hold",
+      "source": "backlog",
+      "project": "alpha",
+      "title_plain": "Which route should we take?",
+      "restart": {
+        "kind": null,
+        "text": "Pick A or B - recommended A"
+      }
+    },
+    {
+      "id": "bad-ask-hold",
+      "source": "backlog",
+      "project": "alpha",
+      "title_plain": "Reserved answer id",
+      "restart": {
+        "kind": null,
+        "text": "choose"
+      }
+    },
+    {
+      "id": "dated-ask",
+      "source": "backlog",
+      "project": "alpha",
+      "title_plain": "Revisit the export later",
+      "restart": {
+        "kind": "date",
+        "until": "2026-12-01",
+        "text": "revisit later"
+      }
+    },
+    {
+      "id": "after-hold",
+      "source": "backlog",
+      "project": "alpha",
+      "title_plain": "Follow-up after the widget",
+      "restart": {
+        "kind": "after_work",
+        "blocker_ids": [
+          "ship-a"
+        ],
+        "text": null
+      }
+    },
+    {
+      "id": "vendor-hold",
+      "source": "backlog",
+      "project": "alpha",
+      "title_plain": "Vendor reply needed",
+      "restart": {
+        "kind": "event",
+        "text": "vendor replies"
+      }
+    },
+    {
+      "id": "parked-hold",
+      "source": "backlog",
+      "project": "alpha",
+      "title_plain": "Parked idea",
+      "restart": {
+        "kind": null,
+        "text": "later maybe"
+      }
+    },
+    {
+      "id": "paused-d",
+      "source": "child-state",
+      "project": "alpha",
+      "title_plain": "Wait for the vendor window",
+      "restart": {
+        "kind": "event",
+        "text": "waiting for the vendor window"
+      }
+    },
+    {
+      "id": "blocked-e",
+      "source": "child-state",
+      "project": "alpha",
+      "title_plain": "Wire the widget into the page",
+      "restart": {
+        "kind": "after_work",
+        "blocker_ids": [
+          "ship-a"
+        ],
+        "text": "waiting for ship-a to land"
+      }
+    }
+  ],
+  "capped_run": {
+    "holds_listed": 3,
+    "counts_holds": 9,
+    "omitted": [
+      {
+        "surface": "holds",
+        "count": 6
+      },
+      {
+        "surface": "queued",
+        "count": 4
+      }
+    ]
+  }
+}

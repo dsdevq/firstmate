@@ -1,0 +1,532 @@
+{
+  "schema": "fm-secondmate-home-summary.v2",
+  "hold_classifier_schema": "fm-captain-hold-buckets.v1",
+  "contributions": {
+    "known": 4,
+    "checked": 0,
+    "counts": {
+      "captain": 0,
+      "fleet": 4,
+      "maintainer": 0,
+      "nobody": 0
+    },
+    "unmeasured": 0,
+    "complete": false,
+    "proven_clear": false,
+    "stale_verdicts": 0,
+    "missing_verdicts": 0,
+    "unreadable_records": 0,
+    "valid_until": 900,
+    "captain": [],
+    "captain_omitted": 0
+  },
+  "generated": "2026-07-25T00:00:00Z",
+  "generated_epoch": 1784937600,
+  "home": "/tmp/fm-fleet-snapshot.Xiu9ak/summary-page-fields",
+  "valid": true,
+  "reason": null,
+  "invalidity": {
+    "kind": null,
+    "ids": []
+  },
+  "state": "captain_decision",
+  "active_children": [
+    {
+      "id": "ship-a",
+      "kind": "ship",
+      "state": "working",
+      "repo": "alpha",
+      "name": "feat(api): ship-a Export widget for the dashboard page",
+      "source": "pane",
+      "doing": "harness busy (claude-hook)",
+      "title_plain": "Export widget for the dashboard page",
+      "since_epoch": 1783000000,
+      "produces": "pr",
+      "open_url": "https://github.com/o/alpha/issues/12"
+    },
+    {
+      "id": "scout-b",
+      "kind": "scout",
+      "state": "working",
+      "repo": "alpha",
+      "name": "SCOUT alpha: investigate the flaky upload path",
+      "source": "pane",
+      "doing": "harness busy (claude-hook)",
+      "title_plain": "investigate the flaky upload path",
+      "since_epoch": 1783468800,
+      "produces": "report",
+      "open_url": null
+    },
+    {
+      "id": "local-c",
+      "kind": "ship",
+      "state": "working",
+      "repo": "alpha",
+      "name": "fix: Local landing for alpha/beta",
+      "source": "pane",
+      "doing": "harness busy (claude-hook)",
+      "title_plain": "Local landing for alpha/beta",
+      "since_epoch": 1783555200,
+      "produces": "landing",
+      "open_url": "https://github.com/o/alpha/pull/44"
+    }
+  ],
+  "decisions_open": [
+    {
+      "id": "ask-hold",
+      "key": "ask-hold",
+      "verb": "captain-hold",
+      "summary": "Choose the export format",
+      "reason": "Options: CSV or JSON?",
+      "hold_until": null,
+      "hold_bucket": "live",
+      "hold_age_days": 5,
+      "source": "backlog",
+      "ask": {
+        "link": "https://board.example/session/b1",
+        "question": "Which export format ships first?",
+        "free_text_allowed": true,
+        "options": [
+          {
+            "recommended": false,
+            "id": "csv",
+            "label": "CSV"
+          },
+          {
+            "recommended": true,
+            "id": "json",
+            "label": "JSON"
+          }
+        ]
+      }
+    },
+    {
+      "id": "plain-hold",
+      "key": "plain-hold",
+      "verb": "captain-hold",
+      "summary": "Which route should we take?",
+      "reason": "Pick A or B - recommended A",
+      "hold_until": null,
+      "hold_bucket": "live",
+      "hold_age_days": 5,
+      "source": "backlog",
+      "ask": null
+    },
+    {
+      "id": "bad-ask-hold",
+      "key": "bad-ask-hold",
+      "verb": "captain-hold",
+      "summary": "Reserved answer id",
+      "reason": "choose",
+      "hold_until": null,
+      "hold_bucket": "live",
+      "hold_age_days": 5,
+      "source": "backlog",
+      "ask": null
+    }
+  ],
+  "holds": [
+    {
+      "id": "ask-hold",
+      "title": "Choose the export format",
+      "blocked_by": null,
+      "blocked_by_ids": [],
+      "unresolved_blocker_ids": [],
+      "reason": "Options: CSV or JSON?",
+      "source": "backlog",
+      "project": "alpha",
+      "title_plain": "Choose the export format",
+      "restart": {
+        "kind": "captain_word",
+        "text": "Options: CSV or JSON?"
+      }
+    },
+    {
+      "id": "plain-hold",
+      "title": "Which route should we take?",
+      "blocked_by": null,
+      "blocked_by_ids": [],
+      "unresolved_blocker_ids": [],
+      "reason": "Pick A or B - recommended A",
+      "source": "backlog",
+      "project": "alpha",
+      "title_plain": "Which route should we take?",
+      "restart": {
+        "kind": null,
+        "text": "Pick A or B - recommended A"
+      }
+    },
+    {
+      "id": "bad-ask-hold",
+      "title": "Reserved answer id",
+      "blocked_by": null,
+      "blocked_by_ids": [],
+      "unresolved_blocker_ids": [],
+      "reason": "choose",
+      "source": "backlog",
+      "project": "alpha",
+      "title_plain": "Reserved answer id",
+      "restart": {
+        "kind": null,
+        "text": "choose"
+      }
+    },
+    {
+      "id": "dated-ask",
+      "title": "Revisit the export later",
+      "blocked_by": null,
+      "blocked_by_ids": [],
+      "unresolved_blocker_ids": [],
+      "reason": "revisit later",
+      "source": "backlog",
+      "project": "alpha",
+      "title_plain": "Revisit the export later",
+      "restart": {
+        "kind": "date",
+        "until": "2026-12-01",
+        "text": "revisit later"
+      }
+    },
+    {
+      "id": "after-hold",
+      "title": "Follow-up after the widget",
+      "blocked_by": "ship-a",
+      "blocked_by_ids": [
+        "ship-a"
+      ],
+      "unresolved_blocker_ids": [
+        "ship-a"
+      ],
+      "reason": "blocked",
+      "source": "backlog",
+      "project": "alpha",
+      "title_plain": "Follow-up after the widget",
+      "restart": {
+        "kind": "after_work",
+        "blocker_ids": [
+          "ship-a"
+        ],
+        "text": null
+      }
+    },
+    {
+      "id": "vendor-hold",
+      "title": "Vendor reply needed",
+      "blocked_by": null,
+      "blocked_by_ids": [],
+      "unresolved_blocker_ids": [],
+      "reason": "vendor replies",
+      "source": "backlog",
+      "project": "alpha",
+      "title_plain": "Vendor reply needed",
+      "restart": {
+        "kind": "event",
+        "text": "vendor replies"
+      }
+    },
+    {
+      "id": "parked-hold",
+      "title": "Parked idea",
+      "blocked_by": null,
+      "blocked_by_ids": [],
+      "unresolved_blocker_ids": [],
+      "reason": "later maybe",
+      "source": "backlog",
+      "project": "alpha",
+      "title_plain": "Parked idea",
+      "restart": {
+        "kind": null,
+        "text": "later maybe"
+      }
+    },
+    {
+      "id": "paused-d",
+      "title": "paused-d",
+      "blocked_by": null,
+      "blocked_by_ids": [],
+      "unresolved_blocker_ids": [],
+      "reason": "waiting for the vendor window",
+      "source": "child-state",
+      "project": "alpha",
+      "title_plain": "Wait for the vendor window",
+      "restart": {
+        "kind": "event",
+        "text": "waiting for the vendor window"
+      }
+    },
+    {
+      "id": "blocked-e",
+      "title": "blocked-e",
+      "blocked_by": "ship-a",
+      "blocked_by_ids": [
+        "ship-a"
+      ],
+      "unresolved_blocker_ids": [
+        "ship-a"
+      ],
+      "reason": "waiting for ship-a to land",
+      "source": "child-state",
+      "project": "alpha",
+      "title_plain": "Wire the widget into the page",
+      "restart": {
+        "kind": "after_work",
+        "blocker_ids": [
+          "ship-a"
+        ],
+        "text": "waiting for ship-a to land"
+      }
+    }
+  ],
+  "queued": [
+    {
+      "id": "dated-ask",
+      "title": "Revisit the export later",
+      "blocked_by": null,
+      "blocked_by_ids": [],
+      "unresolved_blocker_ids": [],
+      "blocked_reason": null,
+      "hold_reason": "revisit later",
+      "hold_kind": "captain",
+      "hold_until": "2026-12-01",
+      "hold_bucket": "dated",
+      "hold_age_days": 5,
+      "captain_actionable": false,
+      "repo": "alpha",
+      "kind": "captain",
+      "since": null
+    },
+    {
+      "id": "after-hold",
+      "title": "Follow-up after the widget",
+      "blocked_by": "ship-a",
+      "blocked_by_ids": [
+        "ship-a"
+      ],
+      "unresolved_blocker_ids": [
+        "ship-a"
+      ],
+      "blocked_reason": null,
+      "hold_reason": null,
+      "hold_kind": null,
+      "hold_until": null,
+      "hold_bucket": null,
+      "hold_age_days": null,
+      "captain_actionable": false,
+      "repo": "alpha",
+      "kind": "ship",
+      "since": null
+    },
+    {
+      "id": "vendor-hold",
+      "title": "Vendor reply needed",
+      "blocked_by": null,
+      "blocked_by_ids": [],
+      "unresolved_blocker_ids": [],
+      "blocked_reason": null,
+      "hold_reason": "vendor replies",
+      "hold_kind": "external",
+      "hold_until": null,
+      "hold_bucket": null,
+      "hold_age_days": null,
+      "captain_actionable": false,
+      "repo": "alpha",
+      "kind": "ship",
+      "since": null
+    },
+    {
+      "id": "parked-hold",
+      "title": "Parked idea",
+      "blocked_by": null,
+      "blocked_by_ids": [],
+      "unresolved_blocker_ids": [],
+      "blocked_reason": null,
+      "hold_reason": "later maybe",
+      "hold_kind": "parked",
+      "hold_until": null,
+      "hold_bucket": null,
+      "hold_age_days": null,
+      "captain_actionable": false,
+      "repo": "alpha",
+      "kind": "ship",
+      "since": null
+    },
+    {
+      "id": "ask-hold",
+      "title": "Choose the export format",
+      "blocked_by": null,
+      "blocked_by_ids": [],
+      "unresolved_blocker_ids": [],
+      "blocked_reason": null,
+      "hold_reason": "Options: CSV or JSON?",
+      "hold_kind": "captain",
+      "hold_until": null,
+      "hold_bucket": "live",
+      "hold_age_days": 5,
+      "captain_actionable": true,
+      "repo": "alpha",
+      "kind": "captain",
+      "since": null
+    },
+    {
+      "id": "plain-hold",
+      "title": "Which route should we take?",
+      "blocked_by": null,
+      "blocked_by_ids": [],
+      "unresolved_blocker_ids": [],
+      "blocked_reason": null,
+      "hold_reason": "Pick A or B - recommended A",
+      "hold_kind": "captain",
+      "hold_until": null,
+      "hold_bucket": "live",
+      "hold_age_days": 5,
+      "captain_actionable": true,
+      "repo": "alpha",
+      "kind": "captain",
+      "since": null
+    },
+    {
+      "id": "bad-ask-hold",
+      "title": "Reserved answer id",
+      "blocked_by": null,
+      "blocked_by_ids": [],
+      "unresolved_blocker_ids": [],
+      "blocked_reason": null,
+      "hold_reason": "choose",
+      "hold_kind": "captain",
+      "hold_until": null,
+      "hold_bucket": "live",
+      "hold_age_days": 5,
+      "captain_actionable": true,
+      "repo": "alpha",
+      "kind": "captain",
+      "since": null
+    }
+  ],
+  "landed": [
+    {
+      "id": "done-pr",
+      "title": "chore(ci): done-pr Speed up the lint lane",
+      "kind": "ship",
+      "hold_kind": null,
+      "pr_url": "https://github.com/o/alpha/pull/7",
+      "report_path": null,
+      "local_note": null,
+      "completion": {
+        "verb": "merged",
+        "date": "2026-07-06"
+      },
+      "project": "alpha",
+      "title_plain": "Speed up the lint lane",
+      "open_url": "https://github.com/o/alpha/pull/7"
+    },
+    {
+      "id": "done-issue",
+      "title": "Close the audit gap",
+      "kind": "ship",
+      "hold_kind": null,
+      "pr_url": null,
+      "report_path": null,
+      "local_note": null,
+      "completion": {
+        "verb": "done",
+        "date": "2026-07-05"
+      },
+      "project": "beta",
+      "title_plain": "Close the audit gap",
+      "open_url": "https://github.com/o/alpha/issues/3"
+    },
+    {
+      "id": "done-scout",
+      "title": "Scout the cache",
+      "kind": "scout",
+      "hold_kind": null,
+      "pr_url": null,
+      "report_path": "data/done-scout/report.md",
+      "local_note": null,
+      "completion": {
+        "date": "2026-07-04",
+        "verb": "reported"
+      },
+      "project": "alpha",
+      "title_plain": "Scout the cache",
+      "open_url": null
+    }
+  ],
+  "endpoints": [
+    {
+      "id": "blocked-e",
+      "state": "paused",
+      "source": "status-log",
+      "endpoint": {
+        "target": "firstmate:fm-blocked-e",
+        "exists": true,
+        "agent_alive": "not_checked",
+        "status": "unknown",
+        "observed_at": "2026-07-25T00:00:00Z",
+        "freshness": "fresh"
+      }
+    },
+    {
+      "id": "local-c",
+      "state": "working",
+      "source": "pane",
+      "endpoint": {
+        "target": "firstmate:fm-local-c",
+        "exists": true,
+        "agent_alive": "not_checked",
+        "status": "unknown",
+        "observed_at": "2026-07-25T00:00:00Z",
+        "freshness": "fresh"
+      }
+    },
+    {
+      "id": "paused-d",
+      "state": "paused",
+      "source": "status-log",
+      "endpoint": {
+        "target": "firstmate:fm-paused-d",
+        "exists": true,
+        "agent_alive": "not_checked",
+        "status": "unknown",
+        "observed_at": "2026-07-25T00:00:00Z",
+        "freshness": "fresh"
+      }
+    },
+    {
+      "id": "scout-b",
+      "state": "working",
+      "source": "pane",
+      "endpoint": {
+        "target": "firstmate:fm-scout-b",
+        "exists": true,
+        "agent_alive": "not_checked",
+        "status": "unknown",
+        "observed_at": "2026-07-25T00:00:00Z",
+        "freshness": "fresh"
+      }
+    },
+    {
+      "id": "ship-a",
+      "state": "working",
+      "source": "pane",
+      "endpoint": {
+        "target": "firstmate:fm-ship-a",
+        "exists": true,
+        "agent_alive": "not_checked",
+        "status": "unknown",
+        "observed_at": "2026-07-25T00:00:00Z",
+        "freshness": "fresh"
+      }
+    }
+  ],
+  "counts": {
+    "active_children": 3,
+    "decisions_open": 3,
+    "asks": 1,
+    "holds": 9,
+    "queued": 7,
+    "landed": 3,
+    "endpoints": 5
+  },
+  "omitted": []
+}
