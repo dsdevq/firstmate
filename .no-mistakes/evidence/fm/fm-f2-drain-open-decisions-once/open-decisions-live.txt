@@ -1,0 +1,27 @@
+--- 1. supervisor drain #1 (first sight -> full)
+1791370745	1	signal	task1.status	needs-decision
+wake annotation: latest wake-EVENT observed at drain, not current state: task1.status: needs-decision [key=api-shape]: pick REST or RPC
+OPEN DECISIONS (still open, folded from the durable status logs - not just the latest line):
+task1 [key=api-shape] needs-decision: pick REST or RPC
+OPEN DECISIONS: close one by answering it: bin/fm-send.sh <task> --resolve-key <key> '<answer>'
+[stderr] WAKE_ACK_REQUIRED: after handling completes run bin/fm-wake-drain.sh --ack-through 1 --recovery-generation 2542165.1791370746.vkVaAg
+--- 2. supervisor drain #2, unacked (-> full again)
+1791370745	1	signal	task1.status	needs-decision
+OPEN DECISIONS (still open, folded from the durable status logs - not just the latest line):
+task1 [key=api-shape] needs-decision: pick REST or RPC
+OPEN DECISIONS: close one by answering it: bin/fm-send.sh <task> --resolve-key <key> '<answer>'
+[stderr] WAKE_ACK_REQUIRED: after handling completes run bin/fm-wake-drain.sh --ack-through 1 --recovery-generation 2542165.1791370746.vkVaAg
+--- ack
+--- 3. drain after ack, set unchanged (-> one line)
+1791370752	2	signal	task1.status	needs-decision
+OPEN DECISIONS: 1 unchanged
+[stderr] WAKE_ACK_REQUIRED: after handling completes run bin/fm-wake-drain.sh --ack-through 2 --recovery-generation 2545442.1791370752.lRW9wA
+=== ADVERSARIAL: unread daemon drain
+--- daemon ack
+--- 5. supervisor drain after daemon ack (must be FULL incl. rollout)
+1791370759	4	signal	task1.status	needs-decision
+OPEN DECISIONS (still open, folded from the durable status logs - not just the latest line):
+task1 [key=api-shape] needs-decision: pick REST or RPC
+task1 [key=rollout] needs-decision: canary or big bang
+OPEN DECISIONS: close one by answering it: bin/fm-send.sh <task> --resolve-key <key> '<answer>'
+[stderr] WAKE_ACK_REQUIRED: after handling completes run bin/fm-wake-drain.sh --ack-through 4 --recovery-generation 2548468.1791370760.nsKH0T
