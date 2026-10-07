@@ -3123,7 +3123,7 @@ test_wedge_threshold_defers_to_a_declared_wait_under_a_working_verdict() {
     ack_stopped_cycle "$state" || fail "could not acknowledge undeclared escalation $n"
     grep -F "possible wedge, escalation $n" "$out" >/dev/null \
       || fail "an undeclared working lane did not reach escalation $n: $(cat "$out")"
-    grep -F ' task=wedge' "$out" >/dev/null \
+    grep -F "possible wedge, escalation $n" "$out" | grep -F ' task=wedge' >/dev/null \
       || fail "escalation $n did not name its task: $(cat "$out")"
     n=$((n + 1))
   done
