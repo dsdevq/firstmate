@@ -1,0 +1,32 @@
+=== trace context: off ===
+--- rd1.meta tail BEFORE relaunch ---
+model=default
+effort=default
+pr=https://github.com/example/repo/pull/76
+pr_head=0123456789abcdef0123456789abcdef01234567
+poll verdict: AUTHENTICATES
+$ fm-control.sh rd1 relaunch --note 'continue with the PR open'  -> exit 0
+--- rd1.meta tail AFTER relaunch ---
+spawn_gen=s1791360769.2029561.28604
+control_relaunch_tx=2028685.20261007T081249Z.7763
+pr=https://github.com/example/repo/pull/76
+pr_head=0123456789abcdef0123456789abcdef01234567
+fm_pr_metadata_identity_parse: OK (https://github.com/example/repo/pull/76)
+poll verdict: AUTHENTICATES
+
+=== trace context: on ===
+--- rd2.meta tail BEFORE relaunch ---
+model=default
+effort=default
+pr=https://github.com/example/repo/pull/76
+pr_head=0123456789abcdef0123456789abcdef01234567
+poll verdict: AUTHENTICATES
+$ fm-control.sh rd2 relaunch --note 'continue with the PR open'  -> exit 0
+--- rd2.meta tail AFTER relaunch ---
+control_relaunch_tx=2032582.20261007T081251Z.8623
+traceparent=00-<fresh>
+pr=https://github.com/example/repo/pull/76
+pr_head=0123456789abcdef0123456789abcdef01234567
+fm_pr_metadata_identity_parse: OK (https://github.com/example/repo/pull/76)
+poll verdict: AUTHENTICATES
+
