@@ -289,6 +289,40 @@ test_open_decisions_print_in_full_only_when_the_set_changes() {
   pass "OPEN DECISIONS prints in full on first, unacknowledged, and changed sets and as one line once acknowledged and unchanged"
 }
 
+test_unread_drain_leaves_the_set_unacknowledged() {
+  local dir state out err sequence generation
+  dir=$(make_case unread-drain)
+  state="$dir/state"
+  out="$dir/drain.out"
+  err="$dir/drain.err"
+  printf 'needs-decision [key=api-shape]: pick REST or RPC\n' > "$state/task1.status"
+
+  # The away daemon drains and acknowledges with nobody reading the output.
+  append_wake "$state" signal task1.status "needs-decision" || fail "queueing the wake failed"
+  FM_WAKE_DRAIN_OPEN_DECISIONS=discard FM_STATE_OVERRIDE="$state" "$DRAIN" > "$out" 2> "$err" || fail "unread drain failed"
+  sequence=$(sed -n 's/^WAKE_ACK_REQUIRED:.*--ack-through \([0-9][0-9]*\) --recovery-generation [A-Za-z0-9._-][A-Za-z0-9._-]*$/\1/p' "$err")
+  generation=$(sed -n 's/^WAKE_ACK_REQUIRED:.*--ack-through [0-9][0-9]* --recovery-generation \([A-Za-z0-9._-][A-Za-z0-9._-]*\)$/\1/p' "$err")
+  [ -n "$sequence" ] && [ -n "$generation" ] || fail "unread drain printed no usable WAKE_ACK_REQUIRED: $(cat "$err")"
+  FM_WAKE_DRAIN_OPEN_DECISIONS=discard FM_STATE_OVERRIDE="$state" "$DRAIN" --ack-through "$sequence" --recovery-generation "$generation" >/dev/null 2>&1 \
+    || fail "unread acknowledgement failed"
+
+  # The supervisor's own drain still shows the decision in full.
+  append_wake "$state" signal task1.status "needs-decision" || fail "queueing the second wake failed"
+  FM_STATE_OVERRIDE="$state" "$DRAIN" > "$out" 2> "$err" || fail "supervisor drain failed"
+  grep -F '[key=api-shape]' "$out" >/dev/null || fail "a decision only an unread drain saw was collapsed: $(cat "$out")"
+  if grep -F 'unchanged' "$out" >/dev/null; then fail "an unread acknowledgement marked the set unchanged: $(cat "$out")"; fi
+  ack_drain "$state" "$err"
+
+  # An unread empty-queue drain records nothing either.
+  FM_WAKE_DRAIN_OPEN_DECISIONS=discard FM_STATE_OVERRIDE="$state" "$DRAIN" > "$out" 2> "$err" || fail "unread empty-queue drain failed"
+  printf 'needs-decision [key=rollout]: canary or big bang\n' >> "$state/task1.status"
+  FM_WAKE_DRAIN_OPEN_DECISIONS=discard FM_STATE_OVERRIDE="$state" "$DRAIN" > "$out" 2> "$err" || fail "second unread empty-queue drain failed"
+  FM_STATE_OVERRIDE="$state" "$DRAIN" > "$out" 2> "$err" || fail "supervisor empty-queue drain failed"
+  grep -F '[key=rollout]' "$out" >/dev/null || fail "an unread empty-queue drain recorded a set the supervisor never saw: $(cat "$out")"
+
+  pass "a drain no model reads never marks OPEN DECISIONS acknowledged"
+}
+
 test_buried_decision_still_surfaces
 test_over_long_decision_note_is_capped_with_a_marker
 test_explicit_resolution_closes_it
@@ -299,3 +333,4 @@ test_open_decision_surfaces_even_with_an_unrelated_queued_wake
 test_buried_decision_surfaces_on_the_empty_queue_fast_path
 test_status_symlink_is_not_followed
 test_open_decisions_print_in_full_only_when_the_set_changes
+test_unread_drain_leaves_the_set_unacknowledged

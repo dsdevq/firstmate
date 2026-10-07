@@ -23,7 +23,9 @@
 # successful --ack-through promotes it, so an unacknowledged drain repeats the
 # full form; a drain with nothing to acknowledge records its set directly.
 # FM_WAKE_DRAIN_OPEN_DECISIONS=full forces the full form (the session-start
-# digest and the away-return brief set it).
+# digest and the away-return brief set it). FM_WAKE_DRAIN_OPEN_DECISIONS=discard
+# is for a drain nobody reads (the away daemon): it records nothing and its
+# --ack-through promotes nothing, so the next reading drain still prints in full.
 set -u
 
 SCRIPT_DIR="$(d=${BASH_SOURCE[0]%/*}; [ "$d" != "${BASH_SOURCE[0]}" ] || d=.; cd "${d:-/}" && pwd)"
@@ -808,6 +810,10 @@ print_status_sections() {
 record_open_decisions_presented() {  # <staged-set>
   local staged=$1 target
   [ -e "$staged" ] || return 0
+  if [ "${FM_WAKE_DRAIN_OPEN_DECISIONS:-}" = discard ]; then
+    rm -f -- "$staged"
+    return 0
+  fi
   if [ "$OD_COMMIT_NOW" = true ]; then
     target="$STATE/.open-decisions-acked.$ACTOR"
   else
@@ -1006,7 +1012,7 @@ if [ -n "$ACK_THROUGH" ]; then
   else
     # The set the acknowledged presentation printed becomes the one later
     # drains compare against.
-    [ ! -e "$STATE/.open-decisions-presented.$ACTOR" ] \
+    [ "${FM_WAKE_DRAIN_OPEN_DECISIONS:-}" = discard ] || [ ! -e "$STATE/.open-decisions-presented.$ACTOR" ] \
       || mv -f -- "$STATE/.open-decisions-presented.$ACTOR" "$STATE/.open-decisions-acked.$ACTOR" 2>/dev/null || true
     if [ "$RECOVERY_ACK_MOVED" = true ]; then
       printf 'wake drain: acknowledged wakes through %s (%s row(s) consumed), but a newer recovery episode is pending; re-run bin/fm-wake-drain.sh and use the new WAKE_ACK_REQUIRED command\n' \
