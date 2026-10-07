@@ -1,0 +1,280 @@
+
+$ cat ask.json
+{"question":"Which export format ships first?","options":[{"id":"csv","label":"CSV","recommended":false},{"id":"json","label":"JSON","recommended":true}],"free_text_allowed":true,"link":"https://board.example/session/b1"}
+
+$ fm-captain-hold.sh hold export-format --title 'Choose the export format' --repo alpha --reason 'captain picks the format' --ask-file ask.json
+export-format
+exit=0
+
+$ fm-captain-hold.sh hold route-call --title 'Which route should we take?' --repo alpha --reason 'Pick A or B - recommended A'   # live hold, NO ask file
+route-call
+exit=0
+
+$ fm-captain-hold.sh hold revisit-later --title 'Revisit the export later' --repo alpha --reason 'revisit later' --until 2026-12-01 --ask-file ask.json   # dated hold
+revisit-later
+exit=0
+
+$ fm-captain-hold.sh hold bad-ask --title 'Bad ask' --repo alpha --reason 'bad' --ask-file bad.json   # reserved option id 'reconcile'
+fm-captain-hold: --ask-file is not a valid captain-hold ask (see bin/fm-hold-ask-lib.sh): /tmp/fm-evidence-page.9jByOq/home/bad.json
+exit=1
+
+$ tasks-axi show export-format --full   # the stored structured line
+task:
+  id: export-format
+  title: Choose the export format
+  state: queued
+  blocked: no
+  blocked_by: none
+  held: yes
+  hold_reason: "fm-hold-v1:Y2FwdGFpbiBwaWNrcyB0aGUgZm9ybWF0"
+  hold_kind: captain
+  hold_until: "-"
+  kind: captain
+  repo: alpha
+  priority: "-"
+  created: 2026-10-07
+  closed: "-"
+  deps: none
+  links: none
+  body: "Captain hold set: 2026-10-07T07:45:02Z\nCaptain hold ask: {\"question\":\"Which export format ships first?\",\"options\":[{\"id\":\"csv\",\"label\":\"CSV\",\"recommended\":false},{\"id\":\"json\",\"label\":\"JSON\",\"recommended\":true}],\"free_text_allowed\":true,\"link\":\"https://board.example/session/b1\"}"
+
+$ cat data/backlog.md
+## In flight
+- [ ] ship-a - feat(api): ship-a Export widget for the dashboard page https://github.com/o/alpha/issues/12 (repo: alpha) (kind: ship) (since 2026-10-01)
+- [ ] scout-b - SCOUT alpha: investigate the flaky upload path (repo: alpha) (kind: scout) (since 2026-10-02)
+- [ ] paused-d - fix: Wire the widget into the page blocked-by: ship-a (repo: alpha) (kind: ship) (since 2026-10-03)
+
+## Queued
+- [ ] vendor-hold - Vendor reply needed (repo: alpha) (kind: ship) (hold: vendor replies) (hold-kind: external)
+- [ ] after-hold - Follow-up after the widget blocked-by: ship-a (repo: alpha) (kind: ship)
+- [ ] parked-hold - Parked idea (repo: alpha) (kind: ship) (hold: later maybe) (hold-kind: parked)
+- [ ] export-format - Choose the export format (repo: alpha) (kind: captain) (since 2026-10-07) (hold: fm-hold-v1:Y2FwdGFpbiBwaWNrcyB0aGUgZm9ybWF0) (hold-kind: captain)
+  Captain hold set: 2026-10-07T07:45:02Z
+  Captain hold ask: {"question":"Which export format ships first?","options":[{"id":"csv","label":"CSV","recommended":false},{"id":"json","label":"JSON","recommended":true}],"free_text_allowed":true,"link":"https://board.example/session/b1"}
+- [ ] route-call - Which route should we take? (repo: alpha) (kind: captain) (since 2026-10-07) (hold: fm-hold-v1:UGljayBBIG9yIEIgLSByZWNvbW1lbmRlZCBB) (hold-kind: captain)
+  Captain hold set: 2026-10-07T07:45:03Z
+- [ ] revisit-later - Revisit the export later (repo: alpha) (kind: captain) (since 2026-10-07) (hold: fm-hold-v1:cmV2aXNpdCBsYXRlcg==) (hold-kind: captain) (hold-until: 2026-12-01)
+  Captain hold set: 2026-10-07T07:45:04Z
+  Captain hold ask: {"question":"Which export format ships first?","options":[{"id":"csv","label":"CSV","recommended":false},{"id":"json","label":"JSON","recommended":true}],"free_text_allowed":true,"link":"https://board.example/session/b1"}
+## Done
+- [x] done-pr - chore(ci): done-pr Speed up the lint lane https://github.com/o/alpha/pull/7 (repo: alpha) (kind: ship) (merged 2026-10-05)
+- [x] done-scout - Scout the cache data/done-scout/report.md (repo: alpha) (kind: scout) (reported 2026-10-04)
+
+$ fm-fleet-snapshot.sh --secondmate-home-summary | jq '{schema, counts}'
+{
+  "schema": "fm-secondmate-home-summary.v2",
+  "hold_classifier_schema": "fm-captain-hold-buckets.v1",
+  "counts": {
+    "active_children": 2,
+    "decisions_open": 2,
+    "asks": 1,
+    "holds": 7,
+    "queued": 6,
+    "landed": 2,
+    "endpoints": 3
+  }
+}
+
+$ ... | jq '.decisions_open'   # REAL ASKS: ask present only where the captain's answer restarts the work
+[
+  {
+    "id": "export-format",
+    "hold_bucket": "live",
+    "reason": "captain picks the format",
+    "ask": {
+      "options": [
+        {
+          "recommended": false,
+          "label": "CSV",
+          "id": "csv"
+        },
+        {
+          "recommended": true,
+          "label": "JSON",
+          "id": "json"
+        }
+      ],
+      "free_text_allowed": true,
+      "link": "https://board.example/session/b1",
+      "question": "Which export format ships first?"
+    }
+  },
+  {
+    "id": "route-call",
+    "hold_bucket": "live",
+    "reason": "Pick A or B - recommended A",
+    "ask": null
+  }
+]
+
+$ ... | jq '.active_children'   # WORKING
+[
+  {
+    "id": "ship-a",
+    "kind": "ship",
+    "name": "feat(api): ship-a Export widget for the dashboard page",
+    "title_plain": "Export widget for the dashboard page",
+    "since_epoch": 1790000000,
+    "produces": "pr",
+    "open_url": "https://github.com/o/alpha/issues/12",
+    "doing": "harness busy (claude-hook)"
+  },
+  {
+    "id": "scout-b",
+    "kind": "scout",
+    "name": "SCOUT alpha: investigate the flaky upload path",
+    "title_plain": "investigate the flaky upload path",
+    "since_epoch": 1790899200,
+    "produces": "report",
+    "open_url": null,
+    "doing": "harness busy (claude-hook)"
+  }
+]
+
+$ ... | jq '.landed'   # LANDED
+[
+  {
+    "id": "done-pr",
+    "project": "alpha",
+    "title_plain": "Speed up the lint lane",
+    "open_url": "https://github.com/o/alpha/pull/7",
+    "pr_url": "https://github.com/o/alpha/pull/7",
+    "report_path": null,
+    "completion": {
+      "verb": "merged",
+      "date": "2026-10-05"
+    }
+  },
+  {
+    "id": "done-scout",
+    "project": "alpha",
+    "title_plain": "Scout the cache",
+    "open_url": null,
+    "pr_url": null,
+    "report_path": "data/done-scout/report.md",
+    "completion": {
+      "date": "2026-10-04",
+      "verb": "reported"
+    }
+  }
+]
+
+$ ... | jq '.holds'   # PARKED, restart decided only from structured fields
+[
+  {
+    "id": "vendor-hold",
+    "source": "backlog",
+    "project": "alpha",
+    "title_plain": "Vendor reply needed",
+    "restart": {
+      "kind": "event",
+      "text": "vendor replies"
+    },
+    "unresolved_blocker_ids": []
+  },
+  {
+    "id": "after-hold",
+    "source": "backlog",
+    "project": "alpha",
+    "title_plain": "Follow-up after the widget",
+    "restart": {
+      "kind": "after_work",
+      "blocker_ids": [
+        "ship-a"
+      ],
+      "text": null
+    },
+    "unresolved_blocker_ids": [
+      "ship-a"
+    ]
+  },
+  {
+    "id": "parked-hold",
+    "source": "backlog",
+    "project": "alpha",
+    "title_plain": "Parked idea",
+    "restart": {
+      "kind": null,
+      "text": "later maybe"
+    },
+    "unresolved_blocker_ids": []
+  },
+  {
+    "id": "export-format",
+    "source": "backlog",
+    "project": "alpha",
+    "title_plain": "Choose the export format",
+    "restart": {
+      "kind": "captain_word",
+      "text": "captain picks the format"
+    },
+    "unresolved_blocker_ids": []
+  },
+  {
+    "id": "route-call",
+    "source": "backlog",
+    "project": "alpha",
+    "title_plain": "Which route should we take?",
+    "restart": {
+      "kind": null,
+      "text": "Pick A or B - recommended A"
+    },
+    "unresolved_blocker_ids": []
+  },
+  {
+    "id": "revisit-later",
+    "source": "backlog",
+    "project": "alpha",
+    "title_plain": "Revisit the export later",
+    "restart": {
+      "kind": "date",
+      "until": "2026-12-01",
+      "text": "revisit later"
+    },
+    "unresolved_blocker_ids": []
+  },
+  {
+    "id": "paused-d",
+    "source": "child-state",
+    "project": "alpha",
+    "title_plain": "Wire the widget into the page",
+    "restart": {
+      "kind": "after_work",
+      "blocker_ids": [
+        "ship-a"
+      ],
+      "text": "waiting for ship-a to land"
+    },
+    "unresolved_blocker_ids": [
+      "ship-a"
+    ]
+  }
+]
+
+$ FM_SNAPSHOT_SECONDMATE_QUEUED=2 fm-fleet-snapshot.sh --secondmate-home-summary | jq '{holds:(.holds|length), total:.counts.holds, omitted}'   # capped list discloses its real total
+{
+  "holds_listed": 2,
+  "counts_holds": 7,
+  "omitted": [
+    {
+      "surface": "holds",
+      "count": 5
+    },
+    {
+      "surface": "queued",
+      "count": 4
+    }
+  ]
+}
+
+$ fm-fleet-snapshot.sh --json | jq '{schema, asks:[.backlog.records[]|select(.ask!=null)|{id,hold_bucket,ask:.ask.question}]}'
+{
+  "schema": "fm-fleet-snapshot.v2",
+  "backlog_asks": [
+    {
+      "id": "export-format",
+      "hold_bucket": "live",
+      "question": "Which export format ships first?"
+    }
+  ]
+}
