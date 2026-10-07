@@ -1,0 +1,7 @@
+ok - a stale terminal-looking status is overridden and absorbed while a run is actively working, then wedge-escalated
+ok - a declared wait is not wedge-escalated by a working verdict, while an elapsed declaration and an undeclared lane both keep the unchanged ladder
+ok - the once-only gone report re-arms when the endpoint comes back, and reports a later death again
+
+real	2m28.066s
+user	0m44.989s
+sys	1m13.124s
