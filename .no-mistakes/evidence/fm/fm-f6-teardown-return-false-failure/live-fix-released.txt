@@ -1,0 +1,20 @@
+wt=/tmp/f6lab/case-fix-released/pool/.treehouse/project-a526f9/1/project
+--- pool BEFORE teardown
+{"path":"/tmp/f6lab/case-fix-released/pool/.treehouse/project-a526f9/1/project","status":"leased","lease_id":"b03a05c6a26edccab17a45c82de61f67"}
+--- teardown (mode=released)
+exit=0
+--- stderr
+warning: lsof is unavailable; cannot resolve the tmux pane process group for task-x1
+error: treehouse return failed
+teardown: worktree return reported a failure, but the pool already lists /tmp/f6lab/case-fix-released/pool/.treehouse/project-a526f9/1/project as available and its copy is clean; the return took effect, so teardown continues records-only
+--- stdout
+/tmp/f6lab/case-fix-released/project: already current
+teardown task-x1 complete (window firstmate:fm-task-x1, worktree /tmp/f6lab/case-fix-released/pool/.treehouse/project-a526f9/1/project)
+Backlog: task-x1 just finished (this home keeps no markdown backlog at /tmp/f6lab/case-fix-released/data/backlog.md). Update /tmp/f6lab/case-fix-released/data/backlog.md - move task-x1 to Done, keep Done to the 10 most recent, then re-scan Queued and dispatch only work whose blockers are gone and date is due.
+--- shim.log
+TH-SHIM return mode=released args: return --force /tmp/f6lab/case-fix-released/pool/.treehouse/project-a526f9/1/project
+--- meta present?
+ls: cannot access '/tmp/f6lab/case-fix-released/state/task-x1.meta': No such file or directory
+--- pool AFTER teardown
+{"path":"/tmp/f6lab/case-fix-released/pool/.treehouse/project-a526f9/1/project","status":"available","lease_id":""}
+--- wt status

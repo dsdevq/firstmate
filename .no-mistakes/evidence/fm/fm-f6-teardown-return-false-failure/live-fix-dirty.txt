@@ -1,0 +1,18 @@
+wt=/tmp/f6lab/case-fix-dirty/pool/.treehouse/project-f9b074/1/project
+--- pool BEFORE teardown
+{"path":"/tmp/f6lab/case-fix-dirty/pool/.treehouse/project-f9b074/1/project","status":"leased","lease_id":"6131481c1fad459e7c1e4655ff80c3ca"}
+--- teardown (mode=dirty)
+exit=1
+--- stderr
+warning: lsof is unavailable; cannot resolve the tmux pane process group for task-x1
+error: treehouse return failed
+error: treehouse return failed for worktree /tmp/f6lab/case-fix-dirty/pool/.treehouse/project-f9b074/1/project; teardown aborted
+--- stdout
+--- shim.log
+TH-SHIM return mode=dirty args: return --force /tmp/f6lab/case-fix-dirty/pool/.treehouse/project-f9b074/1/project
+--- meta present?
+/tmp/f6lab/case-fix-dirty/state/task-x1.meta
+--- pool AFTER teardown
+{"path":"/tmp/f6lab/case-fix-dirty/pool/.treehouse/project-f9b074/1/project","status":"dirty","lease_id":""}
+--- wt status
+?? leftover.txt
