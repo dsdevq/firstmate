@@ -21,9 +21,9 @@
 # default a no-mistakes worker appends its commit-stage `done: {summary}` and
 # starts the pipeline itself in the same turn; with `commit` it stops at that
 # line instead and waits for firstmate to start validation, so a commit can be
-# inspected before validation spends allowance. Only the forge-none no-mistakes
-# block takes it: the Gerrit review pass always stops at the commit and the
-# other modes run no pipeline.
+# inspected before validation spends allowance. Only the no-mistakes block
+# without a Gerrit forge (none or forgejo) takes it: the Gerrit review pass
+# always stops at the commit and the other modes run no pipeline.
 # Callers of the gate are bin/fm-crew-state.sh (current-state done),
 # bin/fm-pr-check.sh (PR registration), and bin/fm-inactive-reconcile.sh
 # (secondmate ledger-first publish of a child done). A ship `done:` is not
