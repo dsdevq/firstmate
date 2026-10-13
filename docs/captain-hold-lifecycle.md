@@ -34,6 +34,7 @@ It never reads report bodies, review artifacts, terminal output, or chat.
 | Subcommand | What it does | Details |
 | --- | --- | --- |
 | `hold` | Creates or reuses a task and holds it for the captain. | [Creating a hold](#creating-a-hold-hold) |
+| `ask` | Attaches, replaces, or clears the structured question a held call shows on the dashboard. | [The call's structured ask](#the-calls-structured-ask-ask) |
 | `answer` | Records the captain's exact words and resolves the call. | [Answering a call](#answering-a-call-answer) |
 | `complete` | Records the reviewed captain-held task ids in the originating task's metadata. | [Recording a reviewed inventory](#recording-a-reviewed-inventory-complete) |
 | `verify` | Read-only check that scout teardown runs before removing source state. | [Checking before scout teardown](#checking-before-scout-teardown-verify) |
@@ -67,6 +68,25 @@ Repeat and edge cases:
   If that write fails, the backend hold is not attempted.
 - The reason may contain parentheses, semicolons, quotes, and line breaks.
   [`bin/fm-hold-reason-lib.sh`](../bin/fm-hold-reason-lib.sh) owns the storage encoding and compatibility rules; [`bin/fm-tasks-axi.sh --help`](../bin/fm-tasks-axi.sh) owns the public read commands and output contract.
+- `--ask-file` attaches the call's structured ask in the same act, as described next.
+
+### The call's structured ask (`ask`)
+
+A held call may carry a structured ask: the question, its options, which option is recommended, whether a free-text answer is allowed, and an optional link.
+Without one, the call reaches the dashboard as a read-only line built from its title and hold reason.
+With one, the home summary publishes it as that call's `decisions_open[].ask`, and the dashboard shows the question with its options and the recommended one marked.
+
+`hold --ask-file <path>` attaches the ask while holding, and `ask <task-id> --ask-file <path>` attaches or replaces it on a call that is already held.
+`ask <task-id> --clear` removes it.
+[`bin/fm-captain-ask-lib.sh`](../bin/fm-captain-ask-lib.sh) owns the accepted fields and limits, which mirror the dashboard decision contract; an ask that breaks them is refused before anything is written.
+Captain-facing text in the ask carries no task or issue ids, branch names, hashes, or status prefixes, and the recommended option is published first.
+
+The stored ask is bound to the hold lifecycle it was written for:
+
+- Repeating an active hold keeps the stored ask unless a new `--ask-file` replaces it.
+- A new hold lifecycle never shows the previous lifecycle's ask.
+- Answering or releasing the call removes its ask.
+- A stored ask that no longer satisfies the rule is withheld from the summary and counted as a `decision_asks` entry in its `omitted[]` disclosure.
 
 ### Answering a call (`answer`)
 
