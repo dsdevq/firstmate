@@ -1,0 +1,33 @@
+### 1 hold with ask (options incl. text the dropped filter used to refuse)
+pick-format
+rc=0
+### 2 hold without ask
+pick-name
+rc=0
+{"decisions_open":[{"id":"pick-format","summary":"Pick the export format","reason":"format pending","ask":{"question":"Which export format?","options":[{"id":"3","label":"JSON","recommended":true},{"id":"1","label":"CSV","recommended":false},{"id":"sheet","label":"Spreadsheet","recommended":false},{"id":"4","label":"Budget 2000000","recommended":false},{"id":"5","label":"Use GPT-4","recommended":false}],"free_text_allowed":true,"link":"https://example.test/board"}},{"id":"pick-name","summary":"Pick the release name","reason":"name pending","ask":null}],"omitted":[]}
+### 3 malformed asks refused, nothing stored
+fm-captain-hold: ask in /tmp/fm-ask-live.4cOLWP/bad.json is invalid: question is required
+rc=1
+fm-captain-hold: ask in /tmp/fm-ask-live.4cOLWP/bad.json is invalid: at most one option may be recommended
+rc=1
+fm-captain-hold: ask in /tmp/fm-ask-live.4cOLWP/bad.json is invalid: link must be an http or https URL
+rc=1
+fm-captain-hold: ask in /tmp/fm-ask-live.4cOLWP/bad.json is invalid: at most 6 options are allowed
+rc=1
+pick-format.json
+### 4 ask subcommand is gone
+fm-captain-hold.sh - deterministic mechanics for tasks held for the captain.
+
+The semantic policy is owned once by
+rc=2
+### 5 re-hold with new ask replaces; re-hold w/o keeps
+pick-format
+{"question":"Which?","options":[{"id":"2","label":"B","recommended":true},{"id":"1","label":"A","recommended":false}],"free_text_allowed":false,"link":null}
+pick-format
+{"question":"Which?","options":[{"id":"2","label":"B","recommended":true},{"id":"1","label":"A","recommended":false}],"free_text_allowed":false,"link":null}
+### 6 tampered record withheld + disclosed
+{"decisions_open":[{"id":"pick-format","summary":"Pick the export format","reason":"format pending","ask":null},{"id":"pick-name","summary":"Pick the release name","reason":"name pending","ask":null}],"omitted":[{"surface":"decision_asks","count":1}]}
+### 7 answer removes ask
+released: pick-format
+rc=0
+{"decisions_open":[{"id":"pick-name","summary":"Pick the release name","reason":"name pending","ask":null}],"omitted":[]}
