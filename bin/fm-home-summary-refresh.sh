@@ -7,9 +7,7 @@
 # `fm-fleet-snapshot.sh --secondmate-home-summary` document for this FM_HOME.
 # Its schema remains `fm-secondmate-home-summary.v1`, declares the current hold
 # classifier contract, and includes both the existing generated timestamp and
-# generated_epoch for freshness arithmetic. A decisions_open[].ask that breaks
-# bin/fm-captain-ask-lib.sh's rule makes the document malformed, so the prior
-# ledger stays published rather than one the dashboard cannot render.
+# generated_epoch for freshness arithmetic.
 #
 # Publication is atomic: the producer writes and validates a unique mode-0600
 # temporary file on the state directory's filesystem, then renames it over the
@@ -53,9 +51,6 @@ HOME_SUMMARY_LOCK_HELD=0
 # shellcheck source=bin/fm-timeout-lib.sh
 # shellcheck disable=SC1091
 . "$SCRIPT_DIR/fm-timeout-lib.sh"
-# shellcheck source=bin/fm-captain-ask-lib.sh
-# shellcheck disable=SC1091
-. "$SCRIPT_DIR/fm-captain-ask-lib.sh"
 
 usage() {
   sed -n '2,${/^#/!q;p;}' "$0" | sed 's/^# \{0,1\}//'
@@ -154,7 +149,7 @@ home_summary_refresh_once() {
   fi
   rm -f -- "$HOME_SUMMARY_ERR_TMP"
   HOME_SUMMARY_ERR_TMP=
-  if ! jq -e --arg home "$FM_HOME" "$FM_CAPTAIN_ASK_JQ_DEFS"'
+  if ! jq -e --arg home "$FM_HOME" '
     .schema == "fm-secondmate-home-summary.v1"
     and .hold_classifier_schema == "fm-captain-hold-buckets.v1"
     and .home == $home
@@ -168,7 +163,6 @@ home_summary_refresh_once() {
     and (.invalidity | type) == "object"
     and (.active_children | type) == "array"
     and (.decisions_open | type) == "array"
-    and all(.decisions_open[]; (.ask // null) == null or (.ask | captain_ask_valid))
     and (.holds | type) == "array"
     and (.queued | type) == "array"
     and (.landed | type) == "array"

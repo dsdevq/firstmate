@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # Behavioral coverage for the structured ask a captain-held decision carries:
-# the hold intake and `ask` subcommand that store it, the field rule that
-# refuses a malformed one, its binding to the hold lifecycle, and its
+# the hold intake that stores it, the field rule that refuses a malformed one, its binding to the hold lifecycle, and its
 # publication as decisions_open[].ask through the real home-summary refresh.
 set -u
 
@@ -62,7 +61,7 @@ test_hold_publishes_its_ask_with_the_recommended_option_first() {
   local home ledger
   home=$(make_home publish)
   write_ask "$home/ask.json" '{"question":"  Which export format should the report use? ",
-    "options":[{"label":"CSV"},{"label":"Spreadsheet","id":"sheet"},{"label":"JSON","recommended":true}],
+    "options":[{"label":"CSV"},{"label":"Spreadsheet","id":"sheet"},{"label":"JSON","recommended":true},{"label":"Budget 2000000"},{"label":"Use GPT-4"}],
     "free_text_allowed":true,"link":"https://example.test/board"}'
   run_captain "$home" hold pick-format --title "Pick the export format" \
     --reason "format choice pending" --repo sample --ask-file "$home/ask.json" >/dev/null \
@@ -71,7 +70,7 @@ test_hold_publishes_its_ask_with_the_recommended_option_first() {
     --reason "name choice pending" --repo sample >/dev/null \
     || fail "hold without an ask failed"
   ledger=$(published "$home")
-  assert_equals '{"question":"Which export format should the report use?","options":[{"id":"3","label":"JSON","recommended":true},{"id":"1","label":"CSV","recommended":false},{"id":"sheet","label":"Spreadsheet","recommended":false}],"free_text_allowed":true,"link":"https://example.test/board"}' \
+  assert_equals '{"question":"Which export format should the report use?","options":[{"id":"3","label":"JSON","recommended":true},{"id":"1","label":"CSV","recommended":false},{"id":"sheet","label":"Spreadsheet","recommended":false},{"id":"4","label":"Budget 2000000","recommended":false},{"id":"5","label":"Use GPT-4","recommended":false}],"free_text_allowed":true,"link":"https://example.test/board"}' \
     "$(ask_of "$ledger" pick-format)" "the held decision did not publish its normalized ask"
   assert_equals 'null' "$(ask_of "$ledger" pick-name)" \
     "a decision without an ask did not publish a null ask"
@@ -91,12 +90,6 @@ test_malformed_asks_are_refused_before_anything_is_written() {
     '{"question":"   "}' \
     "{\"question\":\"Pick one\",\"options\":$seven}" \
     '{"question":"Pick one","options":[{"label":"A","recommended":true},{"label":"B","recommended":true}]}' \
-    '{"question":"Should fm/export-format land first?"}' \
-    '{"question":"Pick one","options":[{"label":"Close FS-142 now"}]}' \
-    '{"question":"Revert 3f9a2c1d before the release?"}' \
-    '{"question":"blocked: which credential should be used?"}' \
-    '{"question":"Pick one [at=1791931687]"}' \
-    "{\"question\":\"Pick one\",\"options\":[{\"label\":\"$(printf 'x%.0s' $(seq 1 121))\"}]}" \
     '{"question":"Pick one","priority":"high"}' \
     '{"question":"Pick one","options":[{"label":"A","note":"x"}]}' \
     '{"question":"Pick one","options":[{"id":"1","label":"A"},{"label":"B","id":"1"}]}' \
@@ -129,48 +122,25 @@ test_malformed_asks_are_refused_before_anything_is_written() {
   pass "malformed asks are refused with their problem named and nothing written"
 }
 
-test_ask_attaches_replaces_and_clears_on_a_held_decision() {
+test_rerunning_hold_replaces_the_ask_on_a_held_decision() {
   local home ledger
-  home=$(make_home attach)
-  run_captain "$home" hold pick-region --title "Pick the hosting region" \
-    --reason "region choice pending" --repo sample >/dev/null || fail "hold failed"
+  home=$(make_home replace)
   write_ask "$home/first.json" '{"question":"Which region should host the service?","options":[{"label":"Frankfurt","recommended":true},{"label":"Virginia"}]}'
-  assert_equals 'ask: pick-region' "$(run_captain "$home" ask pick-region --ask-file "$home/first.json")" \
-    "ask did not attach to a held decision"
-  ledger=$(published "$home")
-  assert_equals 'Frankfurt' "$(jq -r '.decisions_open[0].ask.options[0].label' <<<"$ledger")" \
-    "the attached ask was not published"
-
+  run_captain "$home" hold pick-region --title "Pick the hosting region" \
+    --reason "region choice pending" --repo sample --ask-file "$home/first.json" >/dev/null || fail "hold failed"
   write_ask "$home/second.json" '{"question":"Which region should host the service now?","options":[{"label":"Virginia","recommended":true}]}'
-  run_captain "$home" ask pick-region --ask-file "$home/second.json" >/dev/null || fail "ask could not replace the stored ask"
+  run_captain "$home" hold pick-region --reason "region choice pending" \
+    --ask-file "$home/second.json" >/dev/null || fail "re-running hold could not replace the stored ask"
   write_ask "$home/bad.json" '{"question":"Which region?","options":[{"label":"A","recommended":"yes"}]}'
-  if run_captain "$home" ask pick-region --ask-file "$home/bad.json" >/dev/null 2>&1; then
-    fail "ask accepted a malformed replacement"
+  if run_captain "$home" hold pick-region --reason "region choice pending" \
+    --ask-file "$home/bad.json" >/dev/null 2>&1; then
+    fail "re-running hold accepted a malformed replacement"
   fi
   ledger=$(published "$home")
   assert_equals 'Which region should host the service now?|Virginia' \
     "$(jq -r '.decisions_open[0].ask | "\(.question)|\(.options[0].label)"' <<<"$ledger")" \
     "a refused replacement disturbed the stored ask"
-
-  assert_equals 'cleared: pick-region' "$(run_captain "$home" ask pick-region --clear)" "ask --clear failed"
-  ledger=$(published "$home")
-  assert_equals 'null' "$(ask_of "$ledger" pick-region)" "a cleared ask was still published"
-
-  (cd "$home" && tasks-axi add plain-work "Plain queued work" --kind ship --repo sample >/dev/null) \
-    || fail "could not create unheld work"
-  if run_captain "$home" ask plain-work --ask-file "$home/first.json" >/dev/null 2>&1; then
-    fail "ask attached to work that is not held for the captain"
-  fi
-  if run_captain "$home" ask absent-call --ask-file "$home/first.json" >/dev/null 2>&1; then
-    fail "ask attached to a task that does not exist"
-  fi
-  if run_captain "$home" ask pick-region >/dev/null 2>&1; then
-    fail "ask accepted neither --ask-file nor --clear"
-  fi
-  if run_captain "$home" ask pick-region --clear --ask-file "$home/first.json" >/dev/null 2>&1; then
-    fail "ask accepted both --ask-file and --clear"
-  fi
-  pass "ask attaches, replaces, and clears only on a decision held for the captain"
+  pass "re-running hold with an ask replaces the stored ask and a refused one leaves it"
 }
 
 test_ask_follows_the_hold_lifecycle() {
@@ -231,35 +201,8 @@ test_tampered_ask_is_withheld_and_disclosed() {
   pass "a stored ask that breaks the rule is withheld and disclosed, never published"
 }
 
-test_refresh_keeps_the_prior_ledger_over_a_malformed_ask() {
-  local home code prior
-  home=$(make_home guard)
-  run_captain "$home" hold pick-guard --title "Pick the guard" --reason "guard pending" \
-    --repo sample >/dev/null || fail "hold failed"
-  prior=$(published "$home")
-  code="$TMP_ROOT/guard-code"
-  mkdir -p "$code"
-  cp -R "$ROOT/bin" "$code/bin"
-  printf '%s\n' "$prior" > "$code/summary.json"
-  cat > "$code/bin/fm-fleet-snapshot.sh" <<SH
-#!/usr/bin/env bash
-jq '.generated_epoch += 1 | .decisions_open[0].ask = {"question":"Pick one","options":[{"label":"A","recommended":true},{"label":"B","recommended":true}]}' "$code/summary.json"
-SH
-  chmod +x "$code/bin/fm-fleet-snapshot.sh"
-  if PATH="$home/fakebin:$PATH" FM_HOME="$home" FM_STATE_OVERRIDE="$home/state" \
-    FM_DATA_OVERRIDE="$home/data" FM_CONFIG_OVERRIDE="$home/config" \
-    FM_PROJECTS_OVERRIDE="$home/projects" "$code/bin/fm-home-summary-refresh.sh" \
-    >/dev/null 2>"$home/guard.err"; then
-    fail "refresh published a summary whose ask breaks the rule"
-  fi
-  assert_contains "$(cat "$home/guard.err")" "malformed ledger document" "refresh did not name the malformed summary"
-  assert_equals "$prior" "$(cat "$home/state/home-summary.json")" "a malformed ask replaced the prior ledger"
-  pass "refresh keeps the prior ledger rather than publish an ask that breaks the rule"
-}
-
 test_hold_publishes_its_ask_with_the_recommended_option_first
 test_malformed_asks_are_refused_before_anything_is_written
-test_ask_attaches_replaces_and_clears_on_a_held_decision
+test_rerunning_hold_replaces_the_ask_on_a_held_decision
 test_ask_follows_the_hold_lifecycle
 test_tampered_ask_is_withheld_and_disclosed
-test_refresh_keeps_the_prior_ledger_over_a_malformed_ask

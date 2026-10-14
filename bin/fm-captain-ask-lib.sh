@@ -4,20 +4,17 @@
 # a jq program, then call `captain_ask_problems` or `captain_ask_normalize`.
 #
 # ONE OWNER for what a stored captain ask may contain. bin/fm-captain-hold.sh
-# validates and normalizes an ask before it stores one, bin/fm-fleet-snapshot.sh
-# re-validates every stored ask before it publishes it as decisions_open[].ask,
-# and bin/fm-home-summary-refresh.sh refuses a summary whose ask breaks the rule.
-# All three answer the one question "may the dashboard render this ask", so the
-# rule lives here and none of them restates it.
+# validates and normalizes an ask before it stores one, and
+# bin/fm-fleet-snapshot.sh re-validates every stored ask before it publishes it
+# as decisions_open[].ask. Both answer the one question "may the dashboard
+# render this ask", so the rule lives here and neither restates it.
 #
 # The shape is the dashboard's FleetAsk:
 #   {question, options?: [{id?, label, recommended?}], free_text_allowed?, link?}
-# The field limits and the forbidden captain-facing text mirror the decision
-# contract that lifekit-stack's notify-relay enforces: a question of at most
-# 200 characters, at most 6 options with labels of at most 120 characters, at
-# most one recommended option, option ids that are unique slugs, and no task or
-# issue id, branch name, hash, status prefix, or status stamp in the question
-# or any label. Unknown fields are rejected rather than passed through.
+# The rule is structural only: the question and every label are non-empty text,
+# there are at most 6 options, at most one is recommended, option ids are unique
+# slugs, and unknown fields are rejected rather than passed through. It does not
+# inspect the wording of the text.
 #
 # `captain_ask_problems` returns an array of plain-English problems, empty for a
 # valid ask. `captain_ask_normalize` takes a valid ask and returns the stored
@@ -28,26 +25,15 @@
 # shellcheck disable=SC2034 # consumed by the scripts that source this library
 FM_CAPTAIN_ASK_JQ_DEFS='
 def captain_ask_trim: sub("^\\s+"; "") | sub("\\s+$"; "");
-def captain_ask_forbidden_text:
-  test("\\b[A-Za-z]+-\\d+\\b")
-  or test("\\b(?:fm|fix|feat|chore|docs|refactor)/[\\w.-]+"; "i")
-  or test("\\b[0-9a-f]{7,}\\b"; "i")
-  or test("^\\s*(?:status|state|working|blocked|done|failed|paused|needs[- ]decision)\\s*[:\\-\\]]"; "i")
-  or test("\\[at=\\d+\\]"; "i");
-def captain_ask_text_problems($name; $max):
+def captain_ask_text_problems($name):
   if type != "string" then ["\($name) must be text"]
-  else captain_ask_trim as $t
-    | if ($t | length) == 0 then ["\($name) must not be empty"]
-      elif ($t | length) > $max then ["\($name) must be at most \($max) characters"]
-      elif ($t | captain_ask_forbidden_text) then
-        ["\($name) must not carry a task or issue id, branch name, hash, or status prefix"]
-      else [] end
-  end;
+  elif (captain_ask_trim | length) == 0 then ["\($name) must not be empty"]
+  else [] end;
 def captain_ask_option_problems($n):
   if type != "object" then ["option \($n) must be an object"]
   else
     [keys[] | select(IN("id", "label", "recommended") | not) | "option \($n) has unknown field \(.)"]
-    + (if has("label") then (.label | captain_ask_text_problems("option \($n) label"; 120))
+    + (if has("label") then (.label | captain_ask_text_problems("option \($n) label"))
        else ["option \($n) needs a label"] end)
     + (if has("id") and ((.id | type) != "string"
           or (.id | test("^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$") | not))
@@ -70,7 +56,7 @@ def captain_ask_problems:
   if type != "object" then ["the ask must be a JSON object"]
   else
     [keys[] | select(IN("question", "options", "free_text_allowed", "link") | not) | "unknown ask field \(.)"]
-    + (if has("question") then (.question | captain_ask_text_problems("question"; 200))
+    + (if has("question") then (.question | captain_ask_text_problems("question"))
        else ["question is required"] end)
     + (if has("options") then (.options | captain_ask_options_problems) else [] end)
     + (if has("free_text_allowed") and ((.free_text_allowed | type) != "boolean")

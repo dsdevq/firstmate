@@ -23,7 +23,6 @@
 #   fm-captain-hold.sh hold <task-id> --reason <reason> \
 #     [--title <title>] [--repo <repo>] [--origin <origin-id>] [--until YYYY-MM-DD] \
 #     [--ask-file <path>]
-#   fm-captain-hold.sh ask <task-id> (--ask-file <path> | --clear)
 #   fm-captain-hold.sh answer <task-id> --decision-file <path> [--release]
 #   fm-captain-hold.sh answers [<legacy-origin> | --any-origin] --source <provenance>   (keyed answers on stdin)
 #   fm-captain-hold.sh reconcile-requests --source-id <source-id> --source <provenance>   (task ids on stdin)
@@ -59,18 +58,17 @@
 # --until`, so a "revisit later" answer is stored as a date instead of a live
 # card.
 #
-# `--ask-file` and the `ask` subcommand attach the structured question the
-# dashboard renders for the call: a JSON object
+# `--ask-file` attaches the structured question the dashboard renders for the
+# call: a JSON object
 # `{"question": "...", "options": [{"id": "...", "label": "...", "recommended": true}],
 # "free_text_allowed": false, "link": null}` where only `question` is required.
 # bin/fm-captain-ask-lib.sh owns the field rules; an ask that breaks them is
 # refused before anything is written. The normalized ask is stored in
 # `data/captain-asks/<task-id>.json`, bound to the call's hold-set stamp, and
 # bin/fm-fleet-snapshot.sh publishes it as that call's `decisions_open[].ask`.
-# `ask` attaches or replaces the ask on a call that is already held for the
-# captain; `--clear` removes it. Repeating an active hold without `--ask-file`
-# keeps the stored ask, a new hold lifecycle drops it, and a resolved call
-# removes it. A call with no stored ask publishes exactly as before.
+# Repeating an active hold with `--ask-file` replaces the stored ask, repeating
+# it without keeps the stored ask, a new hold lifecycle drops it, and a resolved
+# call removes it. A call with no stored ask publishes exactly as before.
 #
 # `answer` records the captain's exact words and resolves the call in the same
 # act. It requires a non-empty captain decision file of at most 8192 bytes and
@@ -1075,48 +1073,13 @@ command_hold() {
   [ -n "$stamp" ] || fail "task $id lost its hold-set stamp while being held"
   if [ "$have_ask" = 1 ]; then
     store_ask "$id" "$stamp" \
-      || fail "task $id is held for the captain but its ask was not stored; retry with: fm-captain-hold.sh ask $id --ask-file <path>"
+      || fail "task $id is held for the captain but its ask was not stored; retry the hold with --ask-file"
   elif [ "$preserve_hold_set" = 0 ]; then
     # A new hold lifecycle never inherits the previous lifecycle's ask.
     remove_ask "$id" || fail "task $id is held for the captain but its previous ask could not be removed"
   fi
   publish_parent_hold "$id" "$occurrence" needs-decision "$reason"
   printf '%s\n' "$id"
-}
-
-command_ask() {
-  local id=${1:-} ask_file='' have_ask=0 clear=0 show stamp
-  [ "$#" -ge 1 ] || { usage >&2; exit 2; }
-  shift
-  while [ "$#" -gt 0 ]; do
-    case "$1" in
-      --ask-file) shift; ask_file=${1:-}; have_ask=1 ;;
-      --clear) clear=1 ;;
-      *) usage >&2; exit 2 ;;
-    esac
-    shift
-  done
-  validate_slug task-id "$id"
-  [ $((have_ask + clear)) = 1 ] || { usage >&2; exit 2; }
-  if [ "$clear" = 1 ]; then
-    acquire_task_control_lock "$id"
-    remove_ask "$id" || fail "could not remove the ask for $id"
-    printf 'cleared: %s\n' "$id"
-    return 0
-  fi
-  load_ask "$ask_file"
-  acquire_task_control_lock "$id"
-  require_tasks_axi
-  task_show "$id" || fail "captain-held task $id is absent from this home's configured backlog (data directory $DATA)"
-  show=$TASK_SHOW_OUTPUT
-  [ "$(show_field "$show" state)" != "done" ] || fail "task $id is already closed; its ask would never be shown"
-  [ "$(show_field_value "$show" hold_kind)" = captain ] \
-    || fail "task $id is not held for the captain; hold it first"
-  stamp=$(body_hold_set_timestamp "$(decode_shown_value "$(show_field "$show" body)")")
-  [ -n "$stamp" ] \
-    || fail "captain-held task $id has no hold-set stamp; re-run hold on it before attaching an ask"
-  store_ask "$id" "$stamp" || fail "could not store the ask for $id"
-  printf 'ask: %s\n' "$id"
 }
 
 # Record a resolution block beneath any leading active hold-set stamp,
@@ -2152,7 +2115,6 @@ command_open() {  # <task-id> [--identity] [--distinguish-absent]
 case "${1:-}" in
   hold) shift; command_hold "$@" ;;
   answer) shift; command_answer "$@" ;;
-  ask) shift; command_ask "$@" ;;
   answers) shift; command_answers "$@" ;;
   reconcile-requests) shift; command_reconcile_requests "$@" ;;
   bind) shift; command_bind "$@" ;;
