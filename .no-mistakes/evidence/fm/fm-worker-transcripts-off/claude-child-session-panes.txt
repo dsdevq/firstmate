@@ -1,0 +1,24 @@
+### control: CLAUDE_CODE_CHILD_SESSION=1, no force flag (pre-change launch)
+ ▐▛███▛█   Claude Code v2.1.299
+▝▜██████▀  Fable 5.1 with xhigh effort · Claude Max
+ ▝▝   ▝▝   /tmp/fm-lab-cs.s2q1Y6/ctl
+❯ reply with the single word ok
+● ok
+✻ Sautéed for 4s · done 2:24 PM
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⚠ Transcript saving is off — inherited CLAUDE_CODE_CHILD_SESSION marker · restart with CLAUDE_CODE_FORCE_SESSION_PERSISTENCE=1 to keep future transcripts
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+
+### change: CLAUDE_CODE_CHILD_SESSION=1 + CLAUDE_CODE_FORCE_SESSION_PERSISTENCE=1 (new launch)
+ ▐▛███▛█   Claude Code v2.1.299
+▝▜██████▀  Fable 5.1 with xhigh effort · Claude Max
+ ▝▝   ▝▝   /tmp/fm-lab-cs.s2q1Y6/frc
+❯ reply with the single word ok
+● ok
+✻ Cooked for 2s · done 2:24 PM
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⏵⏵ bypass permissions on (shift+tab to cycle) · ← for agents
