@@ -22,7 +22,7 @@
 # when absent), label, and recommended flag, the recommended option first, and
 # explicit free_text_allowed and link values.
 
-# shellcheck disable=SC2034 # consumed by the scripts that source this library
+# shellcheck disable=SC2016,SC2034 # consumed by the scripts that source this library
 FM_CAPTAIN_ASK_JQ_DEFS='
 def captain_ask_trim: sub("^\\s+"; "") | sub("\\s+$"; "");
 def captain_ask_text_problems($name):
